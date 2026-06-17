@@ -14,7 +14,7 @@ import {
   type CanonicalField, type ReconcileResult, type SheetParseResult,
 } from "@/lib/reconcile";
 
-export const Route = createFileRoute("/")({
+export const Route = createFileRoute("/_authenticated/")({
   head: () => ({
     meta: [
       { title: "Đối chiếu hóa đơn Thuế ↔ EasyBooks" },
