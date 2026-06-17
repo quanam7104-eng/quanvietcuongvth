@@ -132,7 +132,7 @@ function detectHeaderRow(matrix: unknown[][]): number {
     let score = 0;
     for (const cell of row) {
       if (typeof cell !== "string") continue;
-      const norm = removeDiacritics(cell.trim());
+      const norm = removeDiacritics(cell.trim()).toLowerCase();
       if (!norm) continue;
       for (const pats of Object.values(FIELD_PATTERNS)) {
         if (pats.some((p) => p.test(norm))) {
