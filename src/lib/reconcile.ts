@@ -435,7 +435,7 @@ export function reconcile(taxList: Invoice[], ebList: Invoice[]): ReconcileResul
   const idxSo = new Map<string, Invoice[]>();
   for (const e of ebList) {
     const k1 = e._key;
-    const k2 = `${e.soHoaDon}|${e.mst}`.toUpperCase();
+    const k2 = `${e.soHoaDon}|${e._mstNorm}`;
     const k3 = e.soHoaDon.toUpperCase();
     (idxFull.get(k1) ?? idxFull.set(k1, []).get(k1)!).push(e);
     (idxSoMst.get(k2) ?? idxSoMst.set(k2, []).get(k2)!).push(e);
@@ -449,7 +449,7 @@ export function reconcile(taxList: Invoice[], ebList: Invoice[]): ReconcileResul
 
   for (const t of taxList) {
     const k1 = t._key;
-    const k2 = `${t.soHoaDon}|${t.mst}`.toUpperCase();
+    const k2 = `${t.soHoaDon}|${t._mstNorm}`;
     const k3 = t.soHoaDon.toUpperCase();
     let cand: Invoice | undefined;
     for (const list of [idxFull.get(k1), idxSoMst.get(k2), idxSo.get(k3)]) {
@@ -471,9 +471,9 @@ export function reconcile(taxList: Invoice[], ebList: Invoice[]): ReconcileResul
       diffs.push({ field: "tongTien", tax: t.tongTien, eb: cand.tongTien, delta: t.tongTien - cand.tongTien });
     if (t.ngay && cand.ngay && t.ngay !== cand.ngay)
       diffs.push({ field: "ngay", tax: t.ngay, eb: cand.ngay });
-    if (t.mst && cand.mst && t.mst !== cand.mst)
+    if (t._mstNorm && cand._mstNorm && t._mstNorm !== cand._mstNorm)
       diffs.push({ field: "mst", tax: t.mst, eb: cand.mst });
-    if (t.kyHieu && cand.kyHieu && t.kyHieu.toUpperCase() !== cand.kyHieu.toUpperCase())
+    if (t._kyHieuNorm && cand._kyHieuNorm && t._kyHieuNorm !== cand._kyHieuNorm)
       diffs.push({ field: "kyHieu", tax: t.kyHieu, eb: cand.kyHieu });
     if (diffs.length === 0) matched.push({ tax: t, eb: cand, diffs });
     else mismatched.push({ tax: t, eb: cand, diffs });
