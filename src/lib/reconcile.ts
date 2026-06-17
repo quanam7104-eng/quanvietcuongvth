@@ -176,7 +176,15 @@ export async function parseWorkbook(file: File): Promise<SheetParseResult[]> {
       if (looksLikeSub) {
         for (let i = 0; i < next.length; i++) {
           const sub = String(next[i] ?? "").trim();
-          if (sub && (!headerRow[i] || /^Cột/.test(headerRow[i]))) headerRow[i] = sub;
+          if (!sub) continue;
+          const parent = headerRow[i] || "";
+          // Overwrite when parent is empty/auto, OR when parent is a
+          // group label (e.g. "Hóa đơn, chứng từ bán ra") that the
+          // sub-row clearly refines.
+          const parentIsGroup =
+            /hoa\s*don|chung\s*tu/i.test(removeDiacritics(parent)) &&
+            !/so\s*hoa\s*don|so\s*hd|ky\s*hieu|mau\s*so|ngay/i.test(removeDiacritics(parent));
+          if (!parent || /^Cột/.test(parent) || parentIsGroup) headerRow[i] = sub;
         }
         dataStart = headerIdx + 2;
       }
