@@ -1,6 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useEffect, useMemo, useState } from "react";
-import { Moon, Sun, Download, Play, ScrollText } from "lucide-react";
+import { Moon, Sun, Download, Play, ScrollText, LogOut } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -9,6 +9,8 @@ import { FileDropzone } from "@/components/FileDropzone";
 import { ColumnMapper } from "@/components/ColumnMapper";
 import { Dashboard } from "@/components/Dashboard";
 import { ResultsView } from "@/components/ResultsView";
+import { supabase } from "@/integrations/supabase/client";
+import { useRouter } from "@tanstack/react-router";
 import {
   autoMap, buildInvoices, exportReport, parseWorkbook, pickBestSheet, reconcile,
   type CanonicalField, type ReconcileResult, type SheetParseResult,
