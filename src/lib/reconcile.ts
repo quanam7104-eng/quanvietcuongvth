@@ -29,21 +29,81 @@ export const FIELD_LABELS: Record<CanonicalField, string> = {
   trangThai: "Trạng thái",
 };
 
-// Keyword patterns for auto-mapping. Vietnamese accented + unaccented.
-const FIELD_PATTERNS: Record<CanonicalField, RegExp[]> = {
-  soHoaDon: [/so\s*hoa\s*don/i, /so\s*hd\b/i, /^so$/i, /invoice\s*no/i],
-  kyHieu: [/ky\s*hieu/i, /serial/i],
-  mauSo: [/mau\s*so/i, /form/i],
-  ngay: [/ngay/i, /date/i],
-  mst: [/ma\s*so\s*thue/i, /\bmst\b/i, /tax\s*code/i],
-  tenKH: [/ten\s*(nguoi|khach|don\s*vi|nguoi\s*mua|nguoi\s*ban)/i, /customer/i, /buyer/i, /seller/i],
-  tienHang: [/doanh\s*thu/i, /tien\s*hang/i, /thanh\s*tien/i, /chua\s*(co\s*)?thue/i, /amount/i, /^subtotal/i],
-  thueGTGT: [/thue\s*gtgt/i, /tien\s*thue/i, /\bvat\b/i],
-  tongTien: [/tong\s*(tien|cong|thanh\s*toan)/i, /total/i],
-  thueSuat: [/thue\s*suat/i, /tax\s*rate/i, /\bts\b/i],
-  loai: [/loai\s*hoa\s*don/i, /loai\s*hd/i, /type/i],
-  trangThai: [/trang\s*thai/i, /status/i, /ket\s*qua/i],
+// Scored patterns. Higher score = stronger evidence. Headers are normalized
+// (lowercased, diacritics removed). We pick the highest-scoring header per
+// field, and each header can only be assigned to one field.
+const FIELD_RULES: Record<CanonicalField, { pattern: RegExp; score: number }[]> = {
+  soHoaDon: [
+    { pattern: /\bso\s*hoa\s*don\b/, score: 100 },
+    { pattern: /\bso\s*hd\b/, score: 90 },
+    { pattern: /invoice\s*(no|number)/, score: 80 },
+    { pattern: /^so$/, score: 40 },
+  ],
+  kyHieu: [
+    { pattern: /\bky\s*hieu(\s*hd)?\b/, score: 100 },
+    { pattern: /\bserial\b/, score: 70 },
+  ],
+  mauSo: [
+    { pattern: /\bmau\s*so(\s*hd)?\b/, score: 100 },
+    { pattern: /\bform\b/, score: 60 },
+  ],
+  ngay: [
+    { pattern: /\bngay(\s*hoa\s*don|\s*lap|\s*,?\s*thang)/, score: 100 },
+    { pattern: /\bngay\b/, score: 70 },
+    { pattern: /\bdate\b/, score: 60 },
+  ],
+  mst: [
+    { pattern: /\bma\s*so\s*thue\b/, score: 100 },
+    { pattern: /\bmst\b/, score: 90 },
+    { pattern: /tax\s*code/, score: 70 },
+  ],
+  tenKH: [
+    { pattern: /\bten\s*(nguoi\s*(mua|ban)|khach|don\s*vi|cong\s*ty)/, score: 100 },
+    { pattern: /\bten\b/, score: 60 },
+    { pattern: /\b(customer|buyer|seller)\b/, score: 70 },
+  ],
+  tienHang: [
+    { pattern: /doanh\s*thu(\s*chua)?/, score: 100 },
+    { pattern: /\btien\s*hang\b/, score: 100 },
+    { pattern: /thanh\s*tien(\s*chua)?/, score: 90 },
+    { pattern: /chua\s*(co\s*)?thue/, score: 80 },
+    { pattern: /\bsubtotal\b/, score: 70 },
+  ],
+  thueGTGT: [
+    // "Thuế GTGT" alone, NOT "Doanh thu chưa có thuế GTGT"
+    { pattern: /^\s*(tien\s*)?thue\s*gtgt\s*$/, score: 100 },
+    { pattern: /^\s*thue\s*gia\s*tri\s*gia\s*tang\s*$/, score: 100 },
+    { pattern: /\btien\s*thue\b/, score: 80 },
+    { pattern: /^\s*vat\s*$/, score: 70 },
+  ],
+  tongTien: [
+    { pattern: /\btong\s*(tien\s*)?(cong\s*)?thanh\s*toan\b/, score: 100 },
+    { pattern: /\btong\s*cong\b/, score: 90 },
+    { pattern: /\btong\s*tien\b/, score: 90 },
+    { pattern: /\btotal\b/, score: 70 },
+  ],
+  thueSuat: [
+    { pattern: /thue\s*suat/, score: 100 },
+    { pattern: /tax\s*rate/, score: 80 },
+  ],
+  loai: [
+    { pattern: /loai\s*(hoa\s*don|hd)/, score: 100 },
+    { pattern: /\btype\b/, score: 60 },
+  ],
+  trangThai: [
+    { pattern: /trang\s*thai/, score: 100 },
+    { pattern: /ket\s*qua/, score: 80 },
+    { pattern: /\bstatus\b/, score: 70 },
+  ],
 };
+
+// Backward-compat export used by header-row detection below.
+const FIELD_PATTERNS: Record<CanonicalField, RegExp[]> = Object.fromEntries(
+  (Object.keys(FIELD_RULES) as CanonicalField[]).map((k) => [
+    k,
+    FIELD_RULES[k].map((r) => r.pattern),
+  ]),
+) as Record<CanonicalField, RegExp[]>;
 
 function removeDiacritics(s: string): string {
   return s
