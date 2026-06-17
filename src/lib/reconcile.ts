@@ -394,7 +394,22 @@ export function buildInvoices(
     }
     list.push(inv);
   }
-  return list;
+  // Aggregate rows sharing the same (kyHieu+soHoaDon+mst) — EasyBooks
+  // exports often emit one row per line item; for invoice-level
+  // reconciliation we sum monetary fields and keep the first descriptive
+  // fields.
+  const byKey = new Map<string, Invoice>();
+  for (const inv of list) {
+    const existing = byKey.get(inv._key);
+    if (!existing) {
+      byKey.set(inv._key, inv);
+      continue;
+    }
+    existing.tienHang += inv.tienHang;
+    existing.thueGTGT += inv.thueGTGT;
+    existing.tongTien += inv.tongTien;
+  }
+  return Array.from(byKey.values());
 }
 
 export type DiffField = "tienHang" | "thueGTGT" | "tongTien" | "ngay" | "mst" | "tenKH" | "kyHieu";
