@@ -264,6 +264,8 @@ export interface Invoice {
   loai: string;
   trangThai: string;
   _key: string;
+  _mstNorm: string;
+  _kyHieuNorm: string;
   _raw: RawRow;
 }
 
@@ -367,6 +369,8 @@ export function buildInvoices(
     void firstCellAll;
     const kyHieu = toStr(get("kyHieu"));
     const mst = toStr(get("mst"));
+    const mstNorm = normMst(mst);
+    const kyHieuNorm = normKyHieu(kyHieu);
     const inv: Invoice = {
       soHoaDon,
       kyHieu,
@@ -380,7 +384,9 @@ export function buildInvoices(
       thueSuat: toStr(get("thueSuat")),
       loai: toStr(get("loai")),
       trangThai: toStr(get("trangThai")),
-      _key: `${kyHieu}|${soHoaDon}|${mst}`.toUpperCase(),
+      _key: `${kyHieuNorm}|${soHoaDon}|${mstNorm}`,
+      _mstNorm: mstNorm,
+      _kyHieuNorm: kyHieuNorm,
       _raw: r,
     };
     if (!inv.tongTien && (inv.tienHang || inv.thueGTGT)) {
