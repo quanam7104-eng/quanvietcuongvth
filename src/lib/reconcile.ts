@@ -328,6 +328,23 @@ function normInvoiceNumber(v: unknown): string {
   return s.replace(/^0+/, "") || s;
 }
 
+/** Normalize MST for comparison: strip non-digits and leading zeros.
+ *  EasyBooks exports MST as a number (loses leading zeros) while the Tax
+ *  export keeps the original 10/13-digit string. */
+function normMst(v: unknown): string {
+  const s = toStr(v).replace(/[^\d]/g, "");
+  return s.replace(/^0+/, "") || s;
+}
+
+/** Normalize Ký hiệu for comparison: uppercase, drop spaces and any
+ *  leading mẫu-số digit prefix (EasyBooks often outputs "1C26TAA"
+ *  while the Tax file outputs "C26TAA"). */
+function normKyHieu(v: unknown): string {
+  let s = toStr(v).replace(/\s+/g, "").toUpperCase();
+  s = s.replace(/^[0-9]+(?=[A-Z])/, "");
+  return s;
+}
+
 export function buildInvoices(
   rows: RawRow[],
   mapping: Partial<Record<CanonicalField, string>>,
