@@ -14,7 +14,48 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      reconciliations: {
+        Row: {
+          created_at: string
+          eb_file_name: string | null
+          id: string
+          matched_count: number
+          mismatched_count: number
+          only_eb_count: number
+          only_tax_count: number
+          result: Json
+          tax_file_name: string | null
+          total_diff: number
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          eb_file_name?: string | null
+          id?: string
+          matched_count?: number
+          mismatched_count?: number
+          only_eb_count?: number
+          only_tax_count?: number
+          result: Json
+          tax_file_name?: string | null
+          total_diff?: number
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          eb_file_name?: string | null
+          id?: string
+          matched_count?: number
+          mismatched_count?: number
+          only_eb_count?: number
+          only_tax_count?: number
+          result?: Json
+          tax_file_name?: string | null
+          total_diff?: number
+          user_id?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
