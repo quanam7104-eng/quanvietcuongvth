@@ -29,21 +29,81 @@ export const FIELD_LABELS: Record<CanonicalField, string> = {
   trangThai: "Trạng thái",
 };
 
-// Keyword patterns for auto-mapping. Vietnamese accented + unaccented.
-const FIELD_PATTERNS: Record<CanonicalField, RegExp[]> = {
-  soHoaDon: [/so\s*hoa\s*don/i, /so\s*hd\b/i, /^so$/i, /invoice\s*no/i],
-  kyHieu: [/ky\s*hieu/i, /serial/i],
-  mauSo: [/mau\s*so/i, /form/i],
-  ngay: [/ngay/i, /date/i],
-  mst: [/ma\s*so\s*thue/i, /\bmst\b/i, /tax\s*code/i],
-  tenKH: [/ten\s*(nguoi|khach|don\s*vi|nguoi\s*mua|nguoi\s*ban)/i, /customer/i, /buyer/i, /seller/i],
-  tienHang: [/doanh\s*thu/i, /tien\s*hang/i, /thanh\s*tien/i, /chua\s*(co\s*)?thue/i, /amount/i, /^subtotal/i],
-  thueGTGT: [/thue\s*gtgt/i, /tien\s*thue/i, /\bvat\b/i],
-  tongTien: [/tong\s*(tien|cong|thanh\s*toan)/i, /total/i],
-  thueSuat: [/thue\s*suat/i, /tax\s*rate/i, /\bts\b/i],
-  loai: [/loai\s*hoa\s*don/i, /loai\s*hd/i, /type/i],
-  trangThai: [/trang\s*thai/i, /status/i, /ket\s*qua/i],
+// Scored patterns. Higher score = stronger evidence. Headers are normalized
+// (lowercased, diacritics removed). We pick the highest-scoring header per
+// field, and each header can only be assigned to one field.
+const FIELD_RULES: Record<CanonicalField, { pattern: RegExp; score: number }[]> = {
+  soHoaDon: [
+    { pattern: /\bso\s*hoa\s*don\b/, score: 100 },
+    { pattern: /\bso\s*hd\b/, score: 90 },
+    { pattern: /invoice\s*(no|number)/, score: 80 },
+    { pattern: /^so$/, score: 40 },
+  ],
+  kyHieu: [
+    { pattern: /\bky\s*hieu(\s*hd)?\b/, score: 100 },
+    { pattern: /\bserial\b/, score: 70 },
+  ],
+  mauSo: [
+    { pattern: /\bmau\s*so(\s*hd)?\b/, score: 100 },
+    { pattern: /\bform\b/, score: 60 },
+  ],
+  ngay: [
+    { pattern: /\bngay(\s*hoa\s*don|\s*lap|\s*,?\s*thang)/, score: 100 },
+    { pattern: /\bngay\b/, score: 70 },
+    { pattern: /\bdate\b/, score: 60 },
+  ],
+  mst: [
+    { pattern: /\bma\s*so\s*thue\b/, score: 100 },
+    { pattern: /\bmst\b/, score: 90 },
+    { pattern: /tax\s*code/, score: 70 },
+  ],
+  tenKH: [
+    { pattern: /\bten\s*(nguoi\s*(mua|ban)|khach|don\s*vi|cong\s*ty)/, score: 100 },
+    { pattern: /\bten\b/, score: 60 },
+    { pattern: /\b(customer|buyer|seller)\b/, score: 70 },
+  ],
+  tienHang: [
+    { pattern: /doanh\s*thu(\s*chua)?/, score: 100 },
+    { pattern: /\btien\s*hang\b/, score: 100 },
+    { pattern: /thanh\s*tien(\s*chua)?/, score: 90 },
+    { pattern: /chua\s*(co\s*)?thue/, score: 80 },
+    { pattern: /\bsubtotal\b/, score: 70 },
+  ],
+  thueGTGT: [
+    // "Thuế GTGT" alone, NOT "Doanh thu chưa có thuế GTGT"
+    { pattern: /^\s*(tien\s*)?thue\s*gtgt\s*$/, score: 100 },
+    { pattern: /^\s*thue\s*gia\s*tri\s*gia\s*tang\s*$/, score: 100 },
+    { pattern: /\btien\s*thue\b/, score: 80 },
+    { pattern: /^\s*vat\s*$/, score: 70 },
+  ],
+  tongTien: [
+    { pattern: /\btong\s*(tien\s*)?(cong\s*)?thanh\s*toan\b/, score: 100 },
+    { pattern: /\btong\s*cong\b/, score: 90 },
+    { pattern: /\btong\s*tien\b/, score: 90 },
+    { pattern: /\btotal\b/, score: 70 },
+  ],
+  thueSuat: [
+    { pattern: /thue\s*suat/, score: 100 },
+    { pattern: /tax\s*rate/, score: 80 },
+  ],
+  loai: [
+    { pattern: /loai\s*(hoa\s*don|hd)/, score: 100 },
+    { pattern: /\btype\b/, score: 60 },
+  ],
+  trangThai: [
+    { pattern: /trang\s*thai/, score: 100 },
+    { pattern: /ket\s*qua/, score: 80 },
+    { pattern: /\bstatus\b/, score: 70 },
+  ],
 };
+
+// Backward-compat export used by header-row detection below.
+const FIELD_PATTERNS: Record<CanonicalField, RegExp[]> = Object.fromEntries(
+  (Object.keys(FIELD_RULES) as CanonicalField[]).map((k) => [
+    k,
+    FIELD_RULES[k].map((r) => r.pattern),
+  ]),
+) as Record<CanonicalField, RegExp[]>;
 
 function removeDiacritics(s: string): string {
   return s
@@ -72,7 +132,7 @@ function detectHeaderRow(matrix: unknown[][]): number {
     let score = 0;
     for (const cell of row) {
       if (typeof cell !== "string") continue;
-      const norm = removeDiacritics(cell.trim());
+      const norm = removeDiacritics(cell.trim()).toLowerCase();
       if (!norm) continue;
       for (const pats of Object.values(FIELD_PATTERNS)) {
         if (pats.some((p) => p.test(norm))) {
@@ -116,7 +176,15 @@ export async function parseWorkbook(file: File): Promise<SheetParseResult[]> {
       if (looksLikeSub) {
         for (let i = 0; i < next.length; i++) {
           const sub = String(next[i] ?? "").trim();
-          if (sub && (!headerRow[i] || /^Cột/.test(headerRow[i]))) headerRow[i] = sub;
+          if (!sub) continue;
+          const parent = headerRow[i] || "";
+          // Overwrite when parent is empty/auto, OR when parent is a
+          // group label (e.g. "Hóa đơn, chứng từ bán ra") that the
+          // sub-row clearly refines.
+          const parentIsGroup =
+            /hoa\s*don|chung\s*tu/i.test(removeDiacritics(parent)) &&
+            !/so\s*hoa\s*don|so\s*hd|ky\s*hieu|mau\s*so|ngay/i.test(removeDiacritics(parent));
+          if (!parent || /^Cột/.test(parent) || parentIsGroup) headerRow[i] = sub;
         }
         dataStart = headerIdx + 2;
       }
@@ -138,18 +206,31 @@ export async function parseWorkbook(file: File): Promise<SheetParseResult[]> {
   return results;
 }
 
-/** Auto-suggest a mapping from headers -> canonical field. */
+/** Auto-suggest a mapping from headers -> canonical field using scored,
+ *  unique assignment so each header maps to at most one field and each
+ *  field picks its best-matching header. */
 export function autoMap(headers: string[]): Partial<Record<CanonicalField, string>> {
-  const map: Partial<Record<CanonicalField, string>> = {};
-  for (const field of Object.keys(FIELD_PATTERNS) as CanonicalField[]) {
-    const pats = FIELD_PATTERNS[field];
+  const fields = Object.keys(FIELD_RULES) as CanonicalField[];
+  // candidates[field] = array of {header, score} sorted desc
+  const candidates: { field: CanonicalField; header: string; score: number }[] = [];
+  for (const f of fields) {
     for (const h of headers) {
-      const norm = removeDiacritics(h);
-      if (pats.some((p) => p.test(norm))) {
-        if (!map[field]) map[field] = h;
-        break;
+      const norm = removeDiacritics(h).toLowerCase().trim();
+      let best = 0;
+      for (const r of FIELD_RULES[f]) {
+        if (r.pattern.test(norm)) best = Math.max(best, r.score);
       }
+      if (best > 0) candidates.push({ field: f, header: h, score: best });
     }
+  }
+  candidates.sort((a, b) => b.score - a.score);
+  const map: Partial<Record<CanonicalField, string>> = {};
+  const usedHeaders = new Set<string>();
+  for (const c of candidates) {
+    if (map[c.field]) continue;
+    if (usedHeaders.has(c.header)) continue;
+    map[c.field] = c.header;
+    usedHeaders.add(c.header);
   }
   return map;
 }
@@ -183,6 +264,8 @@ export interface Invoice {
   loai: string;
   trangThai: string;
   _key: string;
+  _mstNorm: string;
+  _kyHieuNorm: string;
   _raw: RawRow;
 }
 
@@ -247,6 +330,23 @@ function normInvoiceNumber(v: unknown): string {
   return s.replace(/^0+/, "") || s;
 }
 
+/** Normalize MST for comparison: strip non-digits and leading zeros.
+ *  EasyBooks exports MST as a number (loses leading zeros) while the Tax
+ *  export keeps the original 10/13-digit string. */
+function normMst(v: unknown): string {
+  const s = toStr(v).replace(/[^\d]/g, "");
+  return s.replace(/^0+/, "") || s;
+}
+
+/** Normalize Ký hiệu for comparison: uppercase, drop spaces and any
+ *  leading mẫu-số digit prefix (EasyBooks often outputs "1C26TAA"
+ *  while the Tax file outputs "C26TAA"). */
+function normKyHieu(v: unknown): string {
+  let s = toStr(v).replace(/\s+/g, "").toUpperCase();
+  s = s.replace(/^[0-9]+(?=[A-Z])/, "");
+  return s;
+}
+
 export function buildInvoices(
   rows: RawRow[],
   mapping: Partial<Record<CanonicalField, string>>,
@@ -254,10 +354,23 @@ export function buildInvoices(
   const list: Invoice[] = [];
   for (const r of rows) {
     const get = (f: CanonicalField) => (mapping[f] ? r[mapping[f]!] : "");
-    const soHoaDon = normInvoiceNumber(get("soHoaDon"));
+    const soHoaDonRaw = toStr(get("soHoaDon"));
+    const soHoaDon = normInvoiceNumber(soHoaDonRaw);
     if (!soHoaDon) continue;
+    // Skip column-numbering rows like "(1)", "(2)" used in Vietnamese forms.
+    if (/^\(\d+\)$/.test(soHoaDonRaw.trim())) continue;
+    // Skip section headings & totals that landed in the first column.
+    const firstCellAll = Object.values(r).map(toStr).join(" ").toLowerCase();
+    if (/^(cong|tong\s*cong|tong\s*so|i+\.|[0-9]+\.\s*hang\s*hoa)/i.test(
+      removeDiacritics(soHoaDonRaw).toLowerCase().trim(),
+    )) continue;
+    // Heuristic: invoice number should contain a digit.
+    if (!/\d/.test(soHoaDon)) continue;
+    void firstCellAll;
     const kyHieu = toStr(get("kyHieu"));
     const mst = toStr(get("mst"));
+    const mstNorm = normMst(mst);
+    const kyHieuNorm = normKyHieu(kyHieu);
     const inv: Invoice = {
       soHoaDon,
       kyHieu,
@@ -271,7 +384,9 @@ export function buildInvoices(
       thueSuat: toStr(get("thueSuat")),
       loai: toStr(get("loai")),
       trangThai: toStr(get("trangThai")),
-      _key: `${kyHieu}|${soHoaDon}|${mst}`.toUpperCase(),
+      _key: `${kyHieuNorm}|${soHoaDon}|${mstNorm}`,
+      _mstNorm: mstNorm,
+      _kyHieuNorm: kyHieuNorm,
       _raw: r,
     };
     if (!inv.tongTien && (inv.tienHang || inv.thueGTGT)) {
@@ -279,7 +394,22 @@ export function buildInvoices(
     }
     list.push(inv);
   }
-  return list;
+  // Aggregate rows sharing the same (kyHieu+soHoaDon+mst) — EasyBooks
+  // exports often emit one row per line item; for invoice-level
+  // reconciliation we sum monetary fields and keep the first descriptive
+  // fields.
+  const byKey = new Map<string, Invoice>();
+  for (const inv of list) {
+    const existing = byKey.get(inv._key);
+    if (!existing) {
+      byKey.set(inv._key, inv);
+      continue;
+    }
+    existing.tienHang += inv.tienHang;
+    existing.thueGTGT += inv.thueGTGT;
+    existing.tongTien += inv.tongTien;
+  }
+  return Array.from(byKey.values());
 }
 
 export type DiffField = "tienHang" | "thueGTGT" | "tongTien" | "ngay" | "mst" | "tenKH" | "kyHieu";
@@ -320,7 +450,7 @@ export function reconcile(taxList: Invoice[], ebList: Invoice[]): ReconcileResul
   const idxSo = new Map<string, Invoice[]>();
   for (const e of ebList) {
     const k1 = e._key;
-    const k2 = `${e.soHoaDon}|${e.mst}`.toUpperCase();
+    const k2 = `${e.soHoaDon}|${e._mstNorm}`;
     const k3 = e.soHoaDon.toUpperCase();
     (idxFull.get(k1) ?? idxFull.set(k1, []).get(k1)!).push(e);
     (idxSoMst.get(k2) ?? idxSoMst.set(k2, []).get(k2)!).push(e);
@@ -334,7 +464,7 @@ export function reconcile(taxList: Invoice[], ebList: Invoice[]): ReconcileResul
 
   for (const t of taxList) {
     const k1 = t._key;
-    const k2 = `${t.soHoaDon}|${t.mst}`.toUpperCase();
+    const k2 = `${t.soHoaDon}|${t._mstNorm}`;
     const k3 = t.soHoaDon.toUpperCase();
     let cand: Invoice | undefined;
     for (const list of [idxFull.get(k1), idxSoMst.get(k2), idxSo.get(k3)]) {
@@ -356,9 +486,9 @@ export function reconcile(taxList: Invoice[], ebList: Invoice[]): ReconcileResul
       diffs.push({ field: "tongTien", tax: t.tongTien, eb: cand.tongTien, delta: t.tongTien - cand.tongTien });
     if (t.ngay && cand.ngay && t.ngay !== cand.ngay)
       diffs.push({ field: "ngay", tax: t.ngay, eb: cand.ngay });
-    if (t.mst && cand.mst && t.mst !== cand.mst)
+    if (t._mstNorm && cand._mstNorm && t._mstNorm !== cand._mstNorm)
       diffs.push({ field: "mst", tax: t.mst, eb: cand.mst });
-    if (t.kyHieu && cand.kyHieu && t.kyHieu.toUpperCase() !== cand.kyHieu.toUpperCase())
+    if (t._kyHieuNorm && cand._kyHieuNorm && t._kyHieuNorm !== cand._kyHieuNorm)
       diffs.push({ field: "kyHieu", tax: t.kyHieu, eb: cand.kyHieu });
     if (diffs.length === 0) matched.push({ tax: t, eb: cand, diffs });
     else mismatched.push({ tax: t, eb: cand, diffs });
