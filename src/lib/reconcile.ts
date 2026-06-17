@@ -170,9 +170,25 @@ export async function parseWorkbook(file: File): Promise<SheetParseResult[]> {
     const next = matrix[headerIdx + 1];
     let dataStart = headerIdx + 1;
     if (Array.isArray(next)) {
-      const looksLikeSub = next.some(
-        (c) => typeof c === "string" && /hd|hoa\s*don|ngay|mau|ky|so/i.test(removeDiacritics(c)),
+      // Treat the next row as a merged sub-header ONLY when it really looks
+      // like a header band: every non-empty cell is short, contains no
+      // digits / dates / currency, and at least one cell matches a header
+      // keyword. Otherwise we'd swallow the first data row (e.g. a row whose
+      // "Trạng thái" cell says "Hóa đơn mới").
+      const nonEmpty = next.filter((c) => String(c ?? "").trim() !== "");
+      const allShortText = nonEmpty.length > 0 && nonEmpty.every((c) => {
+        const s = String(c ?? "").trim();
+        if (s.length === 0 || s.length > 30) return false;
+        if (/\d/.test(s)) return false; // digits → almost certainly data
+        return true;
+      });
+      const hasHeaderKeyword = nonEmpty.some(
+        (c) => typeof c === "string" &&
+          /\b(so\s*hd|so\s*hoa\s*don|ky\s*hieu|mau\s*so|ngay)\b/.test(
+            removeDiacritics(String(c)).toLowerCase(),
+          ),
       );
+      const looksLikeSub = allShortText && hasHeaderKeyword;
       if (looksLikeSub) {
         for (let i = 0; i < next.length; i++) {
           const sub = String(next[i] ?? "").trim();
