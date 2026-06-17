@@ -327,8 +327,19 @@ export function buildInvoices(
   const list: Invoice[] = [];
   for (const r of rows) {
     const get = (f: CanonicalField) => (mapping[f] ? r[mapping[f]!] : "");
-    const soHoaDon = normInvoiceNumber(get("soHoaDon"));
+    const soHoaDonRaw = toStr(get("soHoaDon"));
+    const soHoaDon = normInvoiceNumber(soHoaDonRaw);
     if (!soHoaDon) continue;
+    // Skip column-numbering rows like "(1)", "(2)" used in Vietnamese forms.
+    if (/^\(\d+\)$/.test(soHoaDonRaw.trim())) continue;
+    // Skip section headings & totals that landed in the first column.
+    const firstCellAll = Object.values(r).map(toStr).join(" ").toLowerCase();
+    if (/^(cong|tong\s*cong|tong\s*so|i+\.|[0-9]+\.\s*hang\s*hoa)/i.test(
+      removeDiacritics(soHoaDonRaw).toLowerCase().trim(),
+    )) continue;
+    // Heuristic: invoice number should contain a digit.
+    if (!/\d/.test(soHoaDon)) continue;
+    void firstCellAll;
     const kyHieu = toStr(get("kyHieu"));
     const mst = toStr(get("mst"));
     const inv: Invoice = {
