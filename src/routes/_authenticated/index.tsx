@@ -19,10 +19,8 @@ import {
 export const Route = createFileRoute("/_authenticated/")({
   head: () => ({
     meta: [
-      { title: "Đối chiếu hóa đơn Thuế ↔ EasyBooks" },
-      { name: "description", content: "Công cụ đối chiếu hàng nghìn hóa đơn giữa dữ liệu Cơ quan Thuế và phần mềm EasyBooks: phát hiện chính xác hóa đơn lệch, thiếu, chênh lệch tiền." },
-      { property: "og:title", content: "Đối chiếu hóa đơn Thuế ↔ EasyBooks" },
-      { property: "og:description", content: "Kiểm tra nhanh hàng nghìn hóa đơn mua/bán: khớp, lệch, thiếu — xuất báo cáo Excel." },
+      { title: "TaxReconcile — Đối Chiếu Hóa Đơn" },
+      { name: "description", content: "TaxReconcile: nền tảng đối chiếu hóa đơn Thuế ↔ EasyBooks chuyên nghiệp." },
     ],
   }),
   component: Index,
@@ -38,7 +36,9 @@ interface SourceState {
 const empty: SourceState = { file: null, sheets: [], selectedSheet: "", mapping: {} };
 
 function Index() {
+  const router = useRouter();
   const [dark, setDark] = useState(false);
+  const [email, setEmail] = useState<string>("");
   const [tax, setTax] = useState<SourceState>(empty);
   const [eb, setEB] = useState<SourceState>(empty);
   const [result, setResult] = useState<ReconcileResult | null>(null);
@@ -47,6 +47,15 @@ function Index() {
   useEffect(() => {
     document.documentElement.classList.toggle("dark", dark);
   }, [dark]);
+
+  useEffect(() => {
+    supabase.auth.getUser().then(({ data }) => setEmail(data.user?.email ?? ""));
+  }, []);
+
+  async function signOut() {
+    await supabase.auth.signOut();
+    router.navigate({ to: "/auth", replace: true });
+  }
 
   async function handleFile(which: "tax" | "eb", f: File | null) {
     if (!f) {
@@ -113,11 +122,12 @@ function Index() {
               <ScrollText className="h-5 w-5" />
             </div>
             <div>
-              <h1 className="text-base font-bold leading-tight">Đối chiếu hóa đơn Thuế ↔ EasyBooks</h1>
-              <p className="text-xs text-muted-foreground">Phát hiện chính xác hóa đơn lệch, thiếu, chênh lệch tiền</p>
+              <h1 className="text-base font-bold leading-tight">TaxReconcile</h1>
+              <p className="text-xs text-muted-foreground">Đối chiếu hóa đơn Thuế ↔ EasyBooks</p>
             </div>
           </div>
           <div className="flex items-center gap-2">
+            {email && <span className="hidden text-xs text-muted-foreground sm:inline">{email}</span>}
             {result && (
               <Button onClick={() => exportReport(result)} variant="default" size="sm">
                 <Download className="mr-2 h-4 w-4" /> Xuất Excel
@@ -125,6 +135,9 @@ function Index() {
             )}
             <Button variant="ghost" size="icon" onClick={() => setDark((d) => !d)}>
               {dark ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
+            </Button>
+            <Button variant="ghost" size="icon" onClick={signOut} title="Đăng xuất">
+              <LogOut className="h-4 w-4" />
             </Button>
           </div>
         </div>
