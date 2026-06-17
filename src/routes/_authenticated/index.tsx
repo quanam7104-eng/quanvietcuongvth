@@ -123,7 +123,7 @@ function Index() {
             </div>
             <div>
               <h1 className="text-base font-bold leading-tight">TaxReconcile</h1>
-              <p className="text-xs text-muted-foreground">Đối chiếu hóa đơn Thuế ↔ EasyBooks</p>
+              <p className="text-xs text-muted-foreground">Sản phẩm của sinh viên HVU -Quán Viết Cường&nbsp;</p>
             </div>
           </div>
           <div className="flex items-center gap-2">

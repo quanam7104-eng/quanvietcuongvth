@@ -86,7 +86,7 @@ function AuthPage() {
           </div>
           <div>
             <h1 className="text-lg font-bold leading-tight">TaxReconcile</h1>
-            <p className="text-xs text-muted-foreground">Đối chiếu hóa đơn Thuế ↔ EasyBooks</p>
+            <p className="text-xs text-muted-foreground">Sản phẩm của sinh viên HVU -Quán Viết Cường&nbsp;</p>
           </div>
         </div>
 
