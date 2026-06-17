@@ -121,7 +121,7 @@ function Index() {
             only_tax_count: res.onlyTax.length,
             only_eb_count: res.onlyEB.length,
             total_diff: totalDiff,
-            result: res as unknown as Record<string, unknown>,
+            result: JSON.parse(JSON.stringify(res)),
           });
           if (error) toast.error("Lưu lịch sử lỗi: " + error.message);
           else setHistoryKey((k) => k + 1);
