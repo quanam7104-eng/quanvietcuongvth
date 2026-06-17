@@ -198,18 +198,31 @@ export async function parseWorkbook(file: File): Promise<SheetParseResult[]> {
   return results;
 }
 
-/** Auto-suggest a mapping from headers -> canonical field. */
+/** Auto-suggest a mapping from headers -> canonical field using scored,
+ *  unique assignment so each header maps to at most one field and each
+ *  field picks its best-matching header. */
 export function autoMap(headers: string[]): Partial<Record<CanonicalField, string>> {
-  const map: Partial<Record<CanonicalField, string>> = {};
-  for (const field of Object.keys(FIELD_PATTERNS) as CanonicalField[]) {
-    const pats = FIELD_PATTERNS[field];
+  const fields = Object.keys(FIELD_RULES) as CanonicalField[];
+  // candidates[field] = array of {header, score} sorted desc
+  const candidates: { field: CanonicalField; header: string; score: number }[] = [];
+  for (const f of fields) {
     for (const h of headers) {
-      const norm = removeDiacritics(h);
-      if (pats.some((p) => p.test(norm))) {
-        if (!map[field]) map[field] = h;
-        break;
+      const norm = removeDiacritics(h).toLowerCase().trim();
+      let best = 0;
+      for (const r of FIELD_RULES[f]) {
+        if (r.pattern.test(norm)) best = Math.max(best, r.score);
       }
+      if (best > 0) candidates.push({ field: f, header: h, score: best });
     }
+  }
+  candidates.sort((a, b) => b.score - a.score);
+  const map: Partial<Record<CanonicalField, string>> = {};
+  const usedHeaders = new Set<string>();
+  for (const c of candidates) {
+    if (map[c.field]) continue;
+    if (usedHeaders.has(c.header)) continue;
+    map[c.field] = c.header;
+    usedHeaders.add(c.header);
   }
   return map;
 }
