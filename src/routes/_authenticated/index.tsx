@@ -9,6 +9,7 @@ import { FileDropzone } from "@/components/FileDropzone";
 import { ColumnMapper } from "@/components/ColumnMapper";
 import { Dashboard } from "@/components/Dashboard";
 import { ResultsView } from "@/components/ResultsView";
+import { HistoryPanel } from "@/components/HistoryPanel";
 import { supabase } from "@/integrations/supabase/client";
 import { useRouter } from "@tanstack/react-router";
 import {
@@ -43,6 +44,8 @@ function Index() {
   const [eb, setEB] = useState<SourceState>(empty);
   const [result, setResult] = useState<ReconcileResult | null>(null);
   const [busy, setBusy] = useState(false);
+  const [historyKey, setHistoryKey] = useState(0);
+  const [resultLabel, setResultLabel] = useState<string>("");
 
   useEffect(() => {
     document.documentElement.classList.toggle("dark", dark);
@@ -96,14 +99,33 @@ function Index() {
     if (!taxSheet || !ebSheet) return;
     setBusy(true);
     const t0 = performance.now();
-    setTimeout(() => {
+    setTimeout(async () => {
       try {
         const taxInv = buildInvoices(taxSheet.rows, tax.mapping);
         const ebInv = buildInvoices(ebSheet.rows, eb.mapping);
         const res = reconcile(taxInv, ebInv);
         setResult(res);
+        setResultLabel(`${tax.file?.name ?? "Thuế"} ↔ ${eb.file?.name ?? "EasyBooks"}`);
         const ms = (performance.now() - t0).toFixed(0);
         toast.success(`Đối chiếu xong ${taxInv.length + ebInv.length} hóa đơn trong ${ms}ms`);
+        // Lưu vào lịch sử tài khoản
+        const { data: u } = await supabase.auth.getUser();
+        if (u.user) {
+          const totalDiff = Math.abs(res.totals.deltaTongTien) + Math.abs(res.totals.deltaThueGTGT) + Math.abs(res.totals.deltaTienHang);
+          const { error } = await supabase.from("reconciliations").insert({
+            user_id: u.user.id,
+            tax_file_name: tax.file?.name ?? null,
+            eb_file_name: eb.file?.name ?? null,
+            matched_count: res.totals.matchedCount,
+            mismatched_count: res.totals.mismatchedCount,
+            only_tax_count: res.onlyTax.length,
+            only_eb_count: res.onlyEB.length,
+            total_diff: totalDiff,
+            result: res as unknown as Record<string, unknown>,
+          });
+          if (error) toast.error("Lưu lịch sử lỗi: " + error.message);
+          else setHistoryKey((k) => k + 1);
+        }
       } catch (e) {
         toast.error("Lỗi đối chiếu: " + (e as Error).message);
       } finally {
@@ -216,6 +238,7 @@ function Index() {
             <div className="flex items-center gap-2">
               <Badge variant="secondary">Bước 3</Badge>
               <h2 className="text-lg font-semibold">Kết quả đối chiếu</h2>
+              {resultLabel && <span className="ml-2 text-xs text-muted-foreground">{resultLabel}</span>}
             </div>
             <Dashboard result={result} />
             <Card className="p-4">
@@ -223,6 +246,18 @@ function Index() {
             </Card>
           </section>
         )}
+
+        {/* History */}
+        <section className="space-y-3">
+          <div className="flex items-center gap-2">
+            <Badge variant="secondary">Lịch sử</Badge>
+            <h2 className="text-lg font-semibold">Các lần đối chiếu đã lưu</h2>
+          </div>
+          <HistoryPanel
+            reloadKey={historyKey}
+            onLoad={(r, label) => { setResult(r); setResultLabel(label); window.scrollTo({ top: 0, behavior: "smooth" }); }}
+          />
+        </section>
 
         {!result && !tax.file && !eb.file && (
           <Card className="p-8 text-center text-sm text-muted-foreground">
