@@ -121,8 +121,10 @@ function AuthPage() {
           </form>
         </Tabs>
 
-        <p className="mt-6 text-center text-xs text-muted-foreground">
-          Dữ liệu hóa đơn được xử lý trực tiếp trên trình duyệt — không lưu trữ trên máy chủ.
+        <p className="mt-6 text-center text-xs text-muted-foreground whitespace-pre-line">
+          Dữ liệu hóa đơn được xử lý trực tiếp trên trình duyệt{"\n"}
+          STK: 100877640769-Viettinbank- Quán Viết Cường{"\n"}
+          Sản phẩm Free không thu phí , mọi ủng hộ xin phép gửi vào STK trên.
         </p>
       </Card>
     </div>
