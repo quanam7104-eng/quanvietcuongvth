@@ -145,7 +145,10 @@ function Index() {
             </div>
             <div>
               <h1 className="text-base font-bold leading-tight">Đối chiếu Hóa Đơn từ thuế và phần mềm .</h1>
-              <p className="text-xs text-muted-foreground">Sản phẩm của sinh viên HVU -Quán Viết Cường&nbsp;</p>
+              <p className="text-xs text-muted-foreground whitespace-pre-line">
+                Sản phẩm của sinh viên Trường Đại học Hùng Vương&nbsp;{"\n"}
+                HVU -Quán Viết Cường&nbsp;
+              </p>
             </div>
           </div>
           <div className="flex items-center gap-2">
