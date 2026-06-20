@@ -86,7 +86,10 @@ function AuthPage() {
           </div>
           <div>
             <h1 className="text-lg font-bold leading-tight">TaxReconcile</h1>
-            <p className="text-xs text-muted-foreground">Sản phẩm của sinh viên HVU -Quán Viết Cường&nbsp;</p>
+            <p className="text-xs text-muted-foreground whitespace-pre-line">
+              Sản phẩm của sinh viên Trường Đại học Hùng Vương&nbsp;{"\n"}
+              HVU -Quán Viết Cường&nbsp;
+            </p>
           </div>
         </div>
 
