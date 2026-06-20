@@ -144,7 +144,7 @@ function Index() {
               <ScrollText className="h-5 w-5" />
             </div>
             <div>
-              <h1 className="text-base font-bold leading-tight">TaxReconcile</h1>
+              <h1 className="text-base font-bold leading-tight">Đối chiếu Hóa Đơn từ thuế và phần mềm .</h1>
               <p className="text-xs text-muted-foreground">Sản phẩm của sinh viên HVU -Quán Viết Cường&nbsp;</p>
             </div>
           </div>
@@ -260,8 +260,10 @@ function Index() {
         </section>
 
         {!result && !tax.file && !eb.file && (
-          <Card className="p-8 text-center text-sm text-muted-foreground">
-            Tải lên hai file Excel để bắt đầu. Dữ liệu hóa đơn được xử lý trực tiếp trên trình duyệt&nbsp;
+          <Card className="p-8 text-center text-sm text-muted-foreground whitespace-pre-line">
+            Dữ liệu hóa đơn được xử lý trực tiếp trên trình duyệt&nbsp;{"\n"}
+            STK: 100877640769-Viettinbank- Quán Viết Cường{"\n"}
+            Sản phẩm Free không thu phí , mọi ủng hộ xin phép gửi vào STK trên.
           </Card>
         )}
       </main>
