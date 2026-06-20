@@ -12,6 +12,7 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as AuthRouteImport } from './routes/auth'
 import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/route'
 import { Route as AuthenticatedIndexRouteImport } from './routes/_authenticated/index'
+import { Route as HuongDanTaiDuLieuThueRouteImport } from './routes/huong-dan.tai-du-lieu-thue'
 
 const AuthRoute = AuthRouteImport.update({
   id: '/auth',
@@ -27,32 +28,46 @@ const AuthenticatedIndexRoute = AuthenticatedIndexRouteImport.update({
   path: '/',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
+const HuongDanTaiDuLieuThueRoute = HuongDanTaiDuLieuThueRouteImport.update({
+  id: '/huong-dan/tai-du-lieu-thue',
+  path: '/huong-dan/tai-du-lieu-thue',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof AuthenticatedIndexRoute
   '/auth': typeof AuthRoute
+  '/huong-dan/tai-du-lieu-thue': typeof HuongDanTaiDuLieuThueRoute
 }
 export interface FileRoutesByTo {
   '/auth': typeof AuthRoute
+  '/huong-dan/tai-du-lieu-thue': typeof HuongDanTaiDuLieuThueRoute
   '/': typeof AuthenticatedIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/_authenticated': typeof AuthenticatedRouteRouteWithChildren
   '/auth': typeof AuthRoute
+  '/huong-dan/tai-du-lieu-thue': typeof HuongDanTaiDuLieuThueRoute
   '/_authenticated/': typeof AuthenticatedIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/auth'
+  fullPaths: '/' | '/auth' | '/huong-dan/tai-du-lieu-thue'
   fileRoutesByTo: FileRoutesByTo
-  to: '/auth' | '/'
-  id: '__root__' | '/_authenticated' | '/auth' | '/_authenticated/'
+  to: '/auth' | '/huong-dan/tai-du-lieu-thue' | '/'
+  id:
+    | '__root__'
+    | '/_authenticated'
+    | '/auth'
+    | '/huong-dan/tai-du-lieu-thue'
+    | '/_authenticated/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   AuthenticatedRouteRoute: typeof AuthenticatedRouteRouteWithChildren
   AuthRoute: typeof AuthRoute
+  HuongDanTaiDuLieuThueRoute: typeof HuongDanTaiDuLieuThueRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -78,6 +93,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedIndexRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/huong-dan/tai-du-lieu-thue': {
+      id: '/huong-dan/tai-du-lieu-thue'
+      path: '/huong-dan/tai-du-lieu-thue'
+      fullPath: '/huong-dan/tai-du-lieu-thue'
+      preLoaderRoute: typeof HuongDanTaiDuLieuThueRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
@@ -95,17 +117,8 @@ const AuthenticatedRouteRouteWithChildren =
 const rootRouteChildren: RootRouteChildren = {
   AuthenticatedRouteRoute: AuthenticatedRouteRouteWithChildren,
   AuthRoute: AuthRoute,
+  HuongDanTaiDuLieuThueRoute: HuongDanTaiDuLieuThueRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
-
-import type { getRouter } from './router.tsx'
-import type { startInstance } from './start.ts'
-declare module '@tanstack/react-start' {
-  interface Register {
-    ssr: true
-    router: Awaited<ReturnType<typeof getRouter>>
-    config: Awaited<ReturnType<typeof startInstance.getOptions>>
-  }
-}
