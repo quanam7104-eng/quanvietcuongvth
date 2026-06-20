@@ -1,4 +1,4 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, Link } from "@tanstack/react-router";
 import { useEffect, useMemo, useState } from "react";
 import { Moon, Sun, Download, Play, ScrollText, LogOut } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -153,6 +153,12 @@ function Index() {
           </div>
           <div className="flex items-center gap-2">
             {email && <span className="hidden text-xs text-muted-foreground sm:inline">{email}</span>}
+            <Link
+              to="/huong-dan/tai-du-lieu-thue"
+              className="hidden text-xs text-primary hover:underline sm:inline"
+            >
+              Hướng dẫn tải dữ liệu
+            </Link>
             {result && (
               <Button onClick={() => exportReport(result)} variant="default" size="sm">
                 <Download className="mr-2 h-4 w-4" /> Xuất Excel

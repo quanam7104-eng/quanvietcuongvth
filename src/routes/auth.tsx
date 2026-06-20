@@ -1,4 +1,4 @@
-import { createFileRoute, useRouter } from "@tanstack/react-router";
+import { createFileRoute, useRouter, Link } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { z } from "zod";
 import { ScrollText, Loader2 } from "lucide-react";
@@ -129,6 +129,14 @@ function AuthPage() {
           STK: 100877640769-Viettinbank- Quán Viết Cường{"\n"}
           Sản phẩm Free không thu phí , mọi ủng hộ xin phép gửi vào STK trên.
         </p>
+        <div className="mt-3 text-center">
+          <Link
+            to="/huong-dan/tai-du-lieu-thue"
+            className="text-xs text-primary hover:underline"
+          >
+            Hướng dẫn tải dữ liệu từ Tổng cục Thuế →
+          </Link>
+        </div>
       </Card>
     </div>
   );
