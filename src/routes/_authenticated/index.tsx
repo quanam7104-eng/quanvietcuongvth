@@ -261,7 +261,7 @@ function Index() {
 
         {!result && !tax.file && !eb.file && (
           <Card className="p-8 text-center text-sm text-muted-foreground">
-            Tải lên hai file Excel để bắt đầu. Mọi xử lý đều thực hiện ngay trên trình duyệt — dữ liệu không rời máy của bạn.
+            Tải lên hai file Excel để bắt đầu. Dữ liệu hóa đơn được xử lý trực tiếp trên trình duyệt&nbsp;
           </Card>
         )}
       </main>
