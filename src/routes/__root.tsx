@@ -120,6 +120,26 @@ function RootShell({ children }: { children: ReactNode }) {
 function RootComponent() {
   const { queryClient } = Route.useRouteContext();
 
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    const clearSession = () => {
+      try {
+        for (let i = localStorage.length - 1; i >= 0; i--) {
+          const k = localStorage.key(i);
+          if (k && k.startsWith("sb-") && k.endsWith("-auth-token")) {
+            localStorage.removeItem(k);
+          }
+        }
+      } catch {}
+    };
+    window.addEventListener("beforeunload", clearSession);
+    window.addEventListener("pagehide", clearSession);
+    return () => {
+      window.removeEventListener("beforeunload", clearSession);
+      window.removeEventListener("pagehide", clearSession);
+    };
+  }, []);
+
   return (
     <QueryClientProvider client={queryClient}>
       {/* Required: nested routes render here. Removing <Outlet /> breaks all child routes. */}
