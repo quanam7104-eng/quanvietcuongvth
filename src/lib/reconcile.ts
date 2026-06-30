@@ -441,6 +441,7 @@ export interface ReconcileResult {
   mismatched: MatchedPair[]; // matched but with differences
   onlyTax: Invoice[];
   onlyEB: Invoice[];
+  duplicatesEB: Invoice[][]; // EB invoices recorded 2+ times (same số HĐ)
   totals: {
     taxCount: number;
     ebCount: number;
@@ -450,6 +451,9 @@ export interface ReconcileResult {
     deltaTienHang: number;
     deltaThueGTGT: number;
     deltaTongTien: number;
+    missingOnEBAmount: number; // tổng tiền hóa đơn thiếu trên phần mềm (chỉ có Thuế)
+    missingOnTaxAmount: number; // tổng tiền hóa đơn thiếu trên Thuế (chỉ có EB)
+    duplicateEBCount: number; // số HĐ bị hạch toán 2 lần trên phần mềm
   };
 }
 
