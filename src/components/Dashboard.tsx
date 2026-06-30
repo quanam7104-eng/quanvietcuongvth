@@ -5,7 +5,7 @@ import {
   BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer,
   PieChart, Pie, Cell, Legend,
 } from "recharts";
-import { CheckCircle2, AlertTriangle, FileX, FileSpreadsheet } from "lucide-react";
+import { CheckCircle2, AlertTriangle, FileX, FileSpreadsheet, Copy } from "lucide-react";
 
 function Stat({ label, value, sub, tone, icon }: {
   label: string; value: string | number; sub?: string;
@@ -54,6 +54,27 @@ export function Dashboard({ result }: { result: ReconcileResult }) {
         <Stat label="Lệch tiền hàng" value={formatVND(t.deltaTienHang)} icon={<AlertTriangle className="h-5 w-5" />} tone={t.deltaTienHang ? "warn" : "ok"} sub="VND" />
         <Stat label="Lệch thuế GTGT" value={formatVND(t.deltaThueGTGT)} icon={<AlertTriangle className="h-5 w-5" />} tone={t.deltaThueGTGT ? "warn" : "ok"} sub="VND" />
         <Stat label="Lệch tổng tiền" value={formatVND(t.deltaTongTien)} icon={<AlertTriangle className="h-5 w-5" />} tone={t.deltaTongTien ? "bad" : "ok"} sub="VND" />
+        <Stat
+          label="Tổng tiền thiếu trên phần mềm"
+          value={formatVND(t.missingOnEBAmount)}
+          icon={<FileX className="h-5 w-5" />}
+          tone={t.missingOnEBAmount ? "bad" : "ok"}
+          sub={`${result.onlyTax.length} HĐ chỉ có trên Thuế`}
+        />
+        <Stat
+          label="Tổng tiền thiếu trên Thuế"
+          value={formatVND(t.missingOnTaxAmount)}
+          icon={<FileX className="h-5 w-5" />}
+          tone={t.missingOnTaxAmount ? "bad" : "ok"}
+          sub={`${result.onlyEB.length} HĐ chỉ có trên phần mềm`}
+        />
+        <Stat
+          label="HĐ hạch toán 2 lần"
+          value={t.duplicateEBCount}
+          icon={<Copy className="h-5 w-5" />}
+          tone={t.duplicateEBCount ? "bad" : "ok"}
+          sub={`${result.duplicatesEB.length} số HĐ bị lặp trên phần mềm`}
+        />
       </div>
 
       <div className="grid gap-4 lg:grid-cols-2">
