@@ -452,7 +452,9 @@ function buildInvoiceList(
 export function findDuplicates(invoices: Invoice[]): Invoice[][] {
   const groups = new Map<string, Invoice[]>();
   for (const inv of invoices) {
-    const key = `${inv.soHoaDon}|${inv._mstNorm}`;
+    // Hạch toán 2 lần = cùng số HĐ + cùng ký hiệu + cùng tổng tiền
+    const amt = Math.round(inv.tongTien || 0);
+    const key = `${inv._kyHieuNorm}|${inv.soHoaDon}|${amt}`;
     const g = groups.get(key);
     if (g) g.push(inv); else groups.set(key, [inv]);
   }
