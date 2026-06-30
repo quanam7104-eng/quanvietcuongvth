@@ -494,7 +494,11 @@ function moneyEq(a: number, b: number) {
   return Math.abs((a || 0) - (b || 0)) <= MONEY_EPS;
 }
 
-export function reconcile(taxList: Invoice[], ebList: Invoice[]): ReconcileResult {
+export function reconcile(
+  taxList: Invoice[],
+  ebList: Invoice[],
+  ebRawList?: Invoice[],
+): ReconcileResult {
   // Build a multi-key index for EB: try ky+so+mst, then so+mst, then just so
   const idxFull = new Map<string, Invoice[]>();
   const idxSoMst = new Map<string, Invoice[]>();
@@ -547,6 +551,8 @@ export function reconcile(taxList: Invoice[], ebList: Invoice[]): ReconcileResul
 
   const onlyEB = ebList.filter((e) => !usedEB.has(e));
 
+  const duplicatesEB = findDuplicates(ebRawList ?? ebList);
+
   const totals = {
     taxCount: taxList.length,
     ebCount: ebList.length,
@@ -556,9 +562,12 @@ export function reconcile(taxList: Invoice[], ebList: Invoice[]): ReconcileResul
     deltaTienHang: mismatched.reduce((s, m) => s + (m.tax.tienHang - m.eb.tienHang), 0),
     deltaThueGTGT: mismatched.reduce((s, m) => s + (m.tax.thueGTGT - m.eb.thueGTGT), 0),
     deltaTongTien: mismatched.reduce((s, m) => s + (m.tax.tongTien - m.eb.tongTien), 0),
+    missingOnEBAmount: onlyTax.reduce((s, t) => s + (t.tongTien || 0), 0),
+    missingOnTaxAmount: onlyEB.reduce((s, e) => s + (e.tongTien || 0), 0),
+    duplicateEBCount: duplicatesEB.reduce((s, g) => s + (g.length - 1), 0),
   };
 
-  return { matched, mismatched, onlyTax, onlyEB, totals };
+  return { matched, mismatched, onlyTax, onlyEB, duplicatesEB, totals };
 }
 
 export function formatVND(n: number): string {
