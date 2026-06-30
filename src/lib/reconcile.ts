@@ -367,23 +367,6 @@ export function buildInvoices(
   rows: RawRow[],
   mapping: Partial<Record<CanonicalField, string>>,
 ): Invoice[] {
-  return buildInvoiceList(rows, mapping, true);
-}
-
-/** Same as buildInvoices but without aggregating duplicate keys — used to
- *  detect invoices accounted for multiple times in the source workbook. */
-export function buildInvoicesRaw(
-  rows: RawRow[],
-  mapping: Partial<Record<CanonicalField, string>>,
-): Invoice[] {
-  return buildInvoiceList(rows, mapping, false);
-}
-
-function buildInvoiceList(
-  rows: RawRow[],
-  mapping: Partial<Record<CanonicalField, string>>,
-  aggregate: boolean,
-): Invoice[] {
   const list: Invoice[] = [];
   for (const r of rows) {
     const get = (f: CanonicalField) => (mapping[f] ? r[mapping[f]!] : "");
@@ -427,7 +410,6 @@ function buildInvoiceList(
     }
     list.push(inv);
   }
-  if (!aggregate) return list;
   // Aggregate rows sharing the same (kyHieu+soHoaDon+mst) — EasyBooks
   // exports often emit one row per line item; for invoice-level
   // reconciliation we sum monetary fields and keep the first descriptive
@@ -446,21 +428,6 @@ function buildInvoiceList(
   return Array.from(byKey.values());
 }
 
-/** Group invoices by số hóa đơn (and MST when present) so callers can
- *  surface invoices that were entered into the accounting software more
- *  than once. */
-export function findDuplicates(invoices: Invoice[]): Invoice[][] {
-  const groups = new Map<string, Invoice[]>();
-  for (const inv of invoices) {
-    // Hạch toán 2 lần = cùng số HĐ + cùng ký hiệu + cùng tổng tiền
-    const amt = Math.round(inv.tongTien || 0);
-    const key = `${inv._kyHieuNorm}|${inv.soHoaDon}|${amt}`;
-    const g = groups.get(key);
-    if (g) g.push(inv); else groups.set(key, [inv]);
-  }
-  return Array.from(groups.values()).filter((g) => g.length >= 2);
-}
-
 export type DiffField = "tienHang" | "thueGTGT" | "tongTien" | "ngay" | "mst" | "tenKH" | "kyHieu";
 
 export interface MatchedPair {
@@ -474,7 +441,6 @@ export interface ReconcileResult {
   mismatched: MatchedPair[]; // matched but with differences
   onlyTax: Invoice[];
   onlyEB: Invoice[];
-  duplicatesEB: Invoice[][]; // EB invoices recorded 2+ times (same số HĐ)
   totals: {
     taxCount: number;
     ebCount: number;
@@ -484,9 +450,6 @@ export interface ReconcileResult {
     deltaTienHang: number;
     deltaThueGTGT: number;
     deltaTongTien: number;
-    missingOnEBAmount: number; // tổng tiền hóa đơn thiếu trên phần mềm (chỉ có Thuế)
-    missingOnTaxAmount: number; // tổng tiền hóa đơn thiếu trên Thuế (chỉ có EB)
-    duplicateEBCount: number; // số HĐ bị hạch toán 2 lần trên phần mềm
   };
 }
 
@@ -496,11 +459,7 @@ function moneyEq(a: number, b: number) {
   return Math.abs((a || 0) - (b || 0)) <= MONEY_EPS;
 }
 
-export function reconcile(
-  taxList: Invoice[],
-  ebList: Invoice[],
-  ebRawList?: Invoice[],
-): ReconcileResult {
+export function reconcile(taxList: Invoice[], ebList: Invoice[]): ReconcileResult {
   // Build a multi-key index for EB: try ky+so+mst, then so+mst, then just so
   const idxFull = new Map<string, Invoice[]>();
   const idxSoMst = new Map<string, Invoice[]>();
@@ -553,8 +512,6 @@ export function reconcile(
 
   const onlyEB = ebList.filter((e) => !usedEB.has(e));
 
-  const duplicatesEB = findDuplicates(ebRawList ?? ebList);
-
   const totals = {
     taxCount: taxList.length,
     ebCount: ebList.length,
@@ -564,12 +521,9 @@ export function reconcile(
     deltaTienHang: mismatched.reduce((s, m) => s + (m.tax.tienHang - m.eb.tienHang), 0),
     deltaThueGTGT: mismatched.reduce((s, m) => s + (m.tax.thueGTGT - m.eb.thueGTGT), 0),
     deltaTongTien: mismatched.reduce((s, m) => s + (m.tax.tongTien - m.eb.tongTien), 0),
-    missingOnEBAmount: onlyTax.reduce((s, t) => s + (t.tongTien || 0), 0),
-    missingOnTaxAmount: onlyEB.reduce((s, e) => s + (e.tongTien || 0), 0),
-    duplicateEBCount: duplicatesEB.reduce((s, g) => s + (g.length - 1), 0),
   };
 
-  return { matched, mismatched, onlyTax, onlyEB, duplicatesEB, totals };
+  return { matched, mismatched, onlyTax, onlyEB, totals };
 }
 
 export function formatVND(n: number): string {

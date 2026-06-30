@@ -13,7 +13,7 @@ import { HistoryPanel } from "@/components/HistoryPanel";
 import { supabase } from "@/integrations/supabase/client";
 import { useRouter } from "@tanstack/react-router";
 import {
-  autoMap, buildInvoices, buildInvoicesRaw, exportReport, parseWorkbook, pickBestSheet, reconcile,
+  autoMap, buildInvoices, exportReport, parseWorkbook, pickBestSheet, reconcile,
   type CanonicalField, type ReconcileResult, type SheetParseResult,
 } from "@/lib/reconcile";
 
@@ -103,8 +103,7 @@ function Index() {
       try {
         const taxInv = buildInvoices(taxSheet.rows, tax.mapping);
         const ebInv = buildInvoices(ebSheet.rows, eb.mapping);
-        const ebRaw = buildInvoicesRaw(ebSheet.rows, eb.mapping);
-        const res = reconcile(taxInv, ebInv, ebRaw);
+        const res = reconcile(taxInv, ebInv);
         setResult(res);
         setResultLabel(`${tax.file?.name ?? "Thuế"} ↔ ${eb.file?.name ?? "EasyBooks"}`);
         const ms = (performance.now() - t0).toFixed(0);

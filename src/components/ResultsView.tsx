@@ -58,9 +58,6 @@ export function ResultsView({ result }: { result: ReconcileResult }) {
           <TabsTrigger value="onlyEB">
             Thiếu trên Thuế <Badge variant="secondary" className="ml-2">{onlyEB.length}</Badge>
           </TabsTrigger>
-          <TabsTrigger value="duplicates">
-            Hạch toán 2 lần <Badge variant="destructive" className="ml-2">{result.duplicatesEB.length}</Badge>
-          </TabsTrigger>
           <TabsTrigger value="matched">
             Khớp <Badge variant="secondary" className="ml-2">{matched.length}</Badge>
           </TabsTrigger>
@@ -105,38 +102,6 @@ export function ResultsView({ result }: { result: ReconcileResult }) {
         </TabsContent>
         <TabsContent value="onlyEB">
           <SimpleInvoiceTable rows={onlyEB} status="Không tìm thấy trên dữ liệu Thuế" badgeVariant="secondary" />
-        </TabsContent>
-        <TabsContent value="duplicates">
-          <ScrollTable>
-            <thead className="bg-muted/50"><tr>
-              <th className={th}>Số HĐ</th><th className={th}>Ký hiệu</th>
-              <th className={th}>MST</th><th className={th}>Tên KH</th>
-              <th className={th}>Ngày HĐ</th><th className={th}>Tổng tiền</th>
-              <th className={th}>Số lần</th>
-            </tr></thead>
-            <tbody>
-              {result.duplicatesEB.flatMap((group, gi) =>
-                group.map((r, i) => (
-                  <tr key={`${gi}-${i}`} className="border-t hover:bg-muted/30">
-                    <td className={`${td} font-medium`}>{r.soHoaDon}</td>
-                    <td className={td}>{r.kyHieu}</td>
-                    <td className={td}>{r.mst}</td>
-                    <td className={td}>{r.tenKH}</td>
-                    <td className={td}>{r.ngay}</td>
-                    <td className={td}>{formatVND(r.tongTien)}</td>
-                    <td className={td}>
-                      {i === 0 && (
-                        <Badge variant="destructive">{group.length} lần</Badge>
-                      )}
-                    </td>
-                  </tr>
-                )),
-              )}
-              {!result.duplicatesEB.length && (
-                <EmptyRow text="Không có hóa đơn nào bị hạch toán 2 lần." cols={7} />
-              )}
-            </tbody>
-          </ScrollTable>
         </TabsContent>
         <TabsContent value="matched">
           <ScrollTable>
