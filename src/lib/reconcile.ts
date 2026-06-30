@@ -367,6 +367,23 @@ export function buildInvoices(
   rows: RawRow[],
   mapping: Partial<Record<CanonicalField, string>>,
 ): Invoice[] {
+  return buildInvoiceList(rows, mapping, true);
+}
+
+/** Same as buildInvoices but without aggregating duplicate keys — used to
+ *  detect invoices accounted for multiple times in the source workbook. */
+export function buildInvoicesRaw(
+  rows: RawRow[],
+  mapping: Partial<Record<CanonicalField, string>>,
+): Invoice[] {
+  return buildInvoiceList(rows, mapping, false);
+}
+
+function buildInvoiceList(
+  rows: RawRow[],
+  mapping: Partial<Record<CanonicalField, string>>,
+  aggregate: boolean,
+): Invoice[] {
   const list: Invoice[] = [];
   for (const r of rows) {
     const get = (f: CanonicalField) => (mapping[f] ? r[mapping[f]!] : "");
@@ -410,6 +427,7 @@ export function buildInvoices(
     }
     list.push(inv);
   }
+  if (!aggregate) return list;
   // Aggregate rows sharing the same (kyHieu+soHoaDon+mst) — EasyBooks
   // exports often emit one row per line item; for invoice-level
   // reconciliation we sum monetary fields and keep the first descriptive
@@ -426,6 +444,19 @@ export function buildInvoices(
     existing.tongTien += inv.tongTien;
   }
   return Array.from(byKey.values());
+}
+
+/** Group invoices by số hóa đơn (and MST when present) so callers can
+ *  surface invoices that were entered into the accounting software more
+ *  than once. */
+export function findDuplicates(invoices: Invoice[]): Invoice[][] {
+  const groups = new Map<string, Invoice[]>();
+  for (const inv of invoices) {
+    const key = `${inv.soHoaDon}|${inv._mstNorm}`;
+    const g = groups.get(key);
+    if (g) g.push(inv); else groups.set(key, [inv]);
+  }
+  return Array.from(groups.values()).filter((g) => g.length >= 2);
 }
 
 export type DiffField = "tienHang" | "thueGTGT" | "tongTien" | "ngay" | "mst" | "tenKH" | "kyHieu";
