@@ -453,7 +453,9 @@ export interface ReconcileResult {
   };
 }
 
-const MONEY_EPS = 1; // tolerance 1 đồng
+// Đối chiếu chính xác đến từng số thập phân — không làm tròn.
+// Chỉ dùng epsilon rất nhỏ để tránh sai số dấu phẩy động của IEEE-754.
+const MONEY_EPS = 1e-9;
 
 function moneyEq(a: number, b: number) {
   return Math.abs((a || 0) - (b || 0)) <= MONEY_EPS;
@@ -527,7 +529,11 @@ export function reconcile(taxList: Invoice[], ebList: Invoice[]): ReconcileResul
 }
 
 export function formatVND(n: number): string {
-  return new Intl.NumberFormat("vi-VN").format(Math.round(n));
+  // Hiển thị đầy đủ phần thập phân (nếu có) — không làm tròn.
+  return new Intl.NumberFormat("vi-VN", {
+    minimumFractionDigits: 0,
+    maximumFractionDigits: 20,
+  }).format(n || 0);
 }
 
 export function exportReport(result: ReconcileResult): void {
