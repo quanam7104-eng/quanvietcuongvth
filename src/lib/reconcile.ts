@@ -462,6 +462,19 @@ function moneyEq(a: number, b: number) {
 }
 
 export function reconcile(taxList: Invoice[], ebList: Invoice[]): ReconcileResult {
+  return reconcileWith(taxList, ebList, ["tienHang", "thueGTGT", "tongTien"]);
+}
+
+/** Hộ kinh doanh: chỉ đối chiếu Tổng tiền thanh toán (EB) với Doanh số bán chưa có thuế (Thuế). */
+export function reconcileHousehold(taxList: Invoice[], ebList: Invoice[]): ReconcileResult {
+  return reconcileWith(taxList, ebList, ["tongTien"]);
+}
+
+function reconcileWith(
+  taxList: Invoice[],
+  ebList: Invoice[],
+  moneyFields: ("tienHang" | "thueGTGT" | "tongTien")[],
+): ReconcileResult {
   // Build a multi-key index for EB: try ky+so+mst, then so+mst, then just so
   const idxFull = new Map<string, Invoice[]>();
   const idxSoMst = new Map<string, Invoice[]>();
@@ -496,11 +509,11 @@ export function reconcile(taxList: Invoice[], ebList: Invoice[]): ReconcileResul
     }
     usedEB.add(cand);
     const diffs: MatchedPair["diffs"] = [];
-    if (!moneyEq(t.tienHang, cand.tienHang))
+    if (moneyFields.includes("tienHang") && !moneyEq(t.tienHang, cand.tienHang))
       diffs.push({ field: "tienHang", tax: t.tienHang, eb: cand.tienHang, delta: t.tienHang - cand.tienHang });
-    if (!moneyEq(t.thueGTGT, cand.thueGTGT))
+    if (moneyFields.includes("thueGTGT") && !moneyEq(t.thueGTGT, cand.thueGTGT))
       diffs.push({ field: "thueGTGT", tax: t.thueGTGT, eb: cand.thueGTGT, delta: t.thueGTGT - cand.thueGTGT });
-    if (!moneyEq(t.tongTien, cand.tongTien))
+    if (moneyFields.includes("tongTien") && !moneyEq(t.tongTien, cand.tongTien))
       diffs.push({ field: "tongTien", tax: t.tongTien, eb: cand.tongTien, delta: t.tongTien - cand.tongTien });
     if (t.ngay && cand.ngay && t.ngay !== cand.ngay)
       diffs.push({ field: "ngay", tax: t.ngay, eb: cand.ngay });
@@ -526,6 +539,42 @@ export function reconcile(taxList: Invoice[], ebList: Invoice[]): ReconcileResul
   };
 
   return { matched, mismatched, onlyTax, onlyEB, totals };
+}
+
+/** Hộ kinh doanh — file Thuế: ánh xạ "Doanh số bán chưa có thuế" vào Tổng tiền,
+ *  không dùng cột Tiền hàng / Thuế GTGT (hộ kinh doanh không có thuế GTGT). */
+export function autoMapHouseholdTax(headers: string[]): Partial<Record<CanonicalField, string>> {
+  const base = autoMap(headers);
+  delete base.tienHang;
+  delete base.thueGTGT;
+  const rules: { pattern: RegExp; score: number }[] = [
+    { pattern: /doanh\s*so.*chua\s*(co\s*)?thue/, score: 200 },
+    { pattern: /revenue\s*excluding\s*vat/, score: 190 },
+    { pattern: /chua\s*(co\s*)?thue/, score: 150 },
+    { pattern: /\btong\s*(tien\s*)?(cong\s*)?thanh\s*toan\b/, score: 100 },
+    { pattern: /\btong\s*tien\b/, score: 90 },
+  ];
+  let bestH = "";
+  let bestS = 0;
+  for (const h of headers) {
+    const norm = removeDiacritics(h).toLowerCase().trim();
+    for (const r of rules) {
+      if (r.pattern.test(norm) && r.score > bestS) {
+        bestS = r.score;
+        bestH = h;
+      }
+    }
+  }
+  if (bestH) base.tongTien = bestH;
+  return base;
+}
+
+/** Hộ kinh doanh — file phần mềm: ưu tiên "Tổng tiền thanh toán" (đã trừ giảm trừ). */
+export function autoMapHouseholdEB(headers: string[]): Partial<Record<CanonicalField, string>> {
+  const base = autoMap(headers);
+  delete base.tienHang;
+  delete base.thueGTGT;
+  return base;
 }
 
 export function formatVND(n: number): string {
