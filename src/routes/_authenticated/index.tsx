@@ -159,6 +159,12 @@ function Index() {
             >
               Hướng dẫn tải dữ liệu
             </Link>
+            <Link
+              to="/ho-kinh-doanh"
+              className="hidden text-xs text-primary hover:underline sm:inline"
+            >
+              Đối chiếu Hộ Kinh Doanh →
+            </Link>
             {result && (
               <Button onClick={() => exportReport(result)} variant="default" size="sm">
                 <Download className="mr-2 h-4 w-4" /> Xuất Excel

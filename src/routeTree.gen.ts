@@ -13,6 +13,7 @@ import { Route as AuthRouteImport } from './routes/auth'
 import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/route'
 import { Route as AuthenticatedIndexRouteImport } from './routes/_authenticated/index'
 import { Route as HuongDanTaiDuLieuThueRouteImport } from './routes/huong-dan.tai-du-lieu-thue'
+import { Route as AuthenticatedHoKinhDoanhRouteImport } from './routes/_authenticated/ho-kinh-doanh'
 
 const AuthRoute = AuthRouteImport.update({
   id: '/auth',
@@ -33,14 +34,22 @@ const HuongDanTaiDuLieuThueRoute = HuongDanTaiDuLieuThueRouteImport.update({
   path: '/huong-dan/tai-du-lieu-thue',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AuthenticatedHoKinhDoanhRoute =
+  AuthenticatedHoKinhDoanhRouteImport.update({
+    id: '/ho-kinh-doanh',
+    path: '/ho-kinh-doanh',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof AuthenticatedIndexRoute
   '/auth': typeof AuthRoute
+  '/ho-kinh-doanh': typeof AuthenticatedHoKinhDoanhRoute
   '/huong-dan/tai-du-lieu-thue': typeof HuongDanTaiDuLieuThueRoute
 }
 export interface FileRoutesByTo {
   '/auth': typeof AuthRoute
+  '/ho-kinh-doanh': typeof AuthenticatedHoKinhDoanhRoute
   '/huong-dan/tai-du-lieu-thue': typeof HuongDanTaiDuLieuThueRoute
   '/': typeof AuthenticatedIndexRoute
 }
@@ -48,18 +57,20 @@ export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/_authenticated': typeof AuthenticatedRouteRouteWithChildren
   '/auth': typeof AuthRoute
+  '/_authenticated/ho-kinh-doanh': typeof AuthenticatedHoKinhDoanhRoute
   '/huong-dan/tai-du-lieu-thue': typeof HuongDanTaiDuLieuThueRoute
   '/_authenticated/': typeof AuthenticatedIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/auth' | '/huong-dan/tai-du-lieu-thue'
+  fullPaths: '/' | '/auth' | '/ho-kinh-doanh' | '/huong-dan/tai-du-lieu-thue'
   fileRoutesByTo: FileRoutesByTo
-  to: '/auth' | '/huong-dan/tai-du-lieu-thue' | '/'
+  to: '/auth' | '/ho-kinh-doanh' | '/huong-dan/tai-du-lieu-thue' | '/'
   id:
     | '__root__'
     | '/_authenticated'
     | '/auth'
+    | '/_authenticated/ho-kinh-doanh'
     | '/huong-dan/tai-du-lieu-thue'
     | '/_authenticated/'
   fileRoutesById: FileRoutesById
@@ -100,14 +111,23 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof HuongDanTaiDuLieuThueRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/_authenticated/ho-kinh-doanh': {
+      id: '/_authenticated/ho-kinh-doanh'
+      path: '/ho-kinh-doanh'
+      fullPath: '/ho-kinh-doanh'
+      preLoaderRoute: typeof AuthenticatedHoKinhDoanhRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
   }
 }
 
 interface AuthenticatedRouteRouteChildren {
+  AuthenticatedHoKinhDoanhRoute: typeof AuthenticatedHoKinhDoanhRoute
   AuthenticatedIndexRoute: typeof AuthenticatedIndexRoute
 }
 
 const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
+  AuthenticatedHoKinhDoanhRoute: AuthenticatedHoKinhDoanhRoute,
   AuthenticatedIndexRoute: AuthenticatedIndexRoute,
 }
 
