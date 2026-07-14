@@ -13,6 +13,7 @@ import { Route as AuthRouteImport } from './routes/auth'
 import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/route'
 import { Route as AuthenticatedIndexRouteImport } from './routes/_authenticated/index'
 import { Route as HuongDanTaiDuLieuThueRouteImport } from './routes/huong-dan.tai-du-lieu-thue'
+import { Route as AuthenticatedThietBiRouteImport } from './routes/_authenticated/thiet-bi'
 import { Route as AuthenticatedHoKinhDoanhRouteImport } from './routes/_authenticated/ho-kinh-doanh'
 
 const AuthRoute = AuthRouteImport.update({
@@ -34,6 +35,11 @@ const HuongDanTaiDuLieuThueRoute = HuongDanTaiDuLieuThueRouteImport.update({
   path: '/huong-dan/tai-du-lieu-thue',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AuthenticatedThietBiRoute = AuthenticatedThietBiRouteImport.update({
+  id: '/thiet-bi',
+  path: '/thiet-bi',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
 const AuthenticatedHoKinhDoanhRoute =
   AuthenticatedHoKinhDoanhRouteImport.update({
     id: '/ho-kinh-doanh',
@@ -45,11 +51,13 @@ export interface FileRoutesByFullPath {
   '/': typeof AuthenticatedIndexRoute
   '/auth': typeof AuthRoute
   '/ho-kinh-doanh': typeof AuthenticatedHoKinhDoanhRoute
+  '/thiet-bi': typeof AuthenticatedThietBiRoute
   '/huong-dan/tai-du-lieu-thue': typeof HuongDanTaiDuLieuThueRoute
 }
 export interface FileRoutesByTo {
   '/auth': typeof AuthRoute
   '/ho-kinh-doanh': typeof AuthenticatedHoKinhDoanhRoute
+  '/thiet-bi': typeof AuthenticatedThietBiRoute
   '/huong-dan/tai-du-lieu-thue': typeof HuongDanTaiDuLieuThueRoute
   '/': typeof AuthenticatedIndexRoute
 }
@@ -58,19 +66,31 @@ export interface FileRoutesById {
   '/_authenticated': typeof AuthenticatedRouteRouteWithChildren
   '/auth': typeof AuthRoute
   '/_authenticated/ho-kinh-doanh': typeof AuthenticatedHoKinhDoanhRoute
+  '/_authenticated/thiet-bi': typeof AuthenticatedThietBiRoute
   '/huong-dan/tai-du-lieu-thue': typeof HuongDanTaiDuLieuThueRoute
   '/_authenticated/': typeof AuthenticatedIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/auth' | '/ho-kinh-doanh' | '/huong-dan/tai-du-lieu-thue'
+  fullPaths:
+    | '/'
+    | '/auth'
+    | '/ho-kinh-doanh'
+    | '/thiet-bi'
+    | '/huong-dan/tai-du-lieu-thue'
   fileRoutesByTo: FileRoutesByTo
-  to: '/auth' | '/ho-kinh-doanh' | '/huong-dan/tai-du-lieu-thue' | '/'
+  to:
+    | '/auth'
+    | '/ho-kinh-doanh'
+    | '/thiet-bi'
+    | '/huong-dan/tai-du-lieu-thue'
+    | '/'
   id:
     | '__root__'
     | '/_authenticated'
     | '/auth'
     | '/_authenticated/ho-kinh-doanh'
+    | '/_authenticated/thiet-bi'
     | '/huong-dan/tai-du-lieu-thue'
     | '/_authenticated/'
   fileRoutesById: FileRoutesById
@@ -111,6 +131,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof HuongDanTaiDuLieuThueRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/_authenticated/thiet-bi': {
+      id: '/_authenticated/thiet-bi'
+      path: '/thiet-bi'
+      fullPath: '/thiet-bi'
+      preLoaderRoute: typeof AuthenticatedThietBiRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/ho-kinh-doanh': {
       id: '/_authenticated/ho-kinh-doanh'
       path: '/ho-kinh-doanh'
@@ -123,11 +150,13 @@ declare module '@tanstack/react-router' {
 
 interface AuthenticatedRouteRouteChildren {
   AuthenticatedHoKinhDoanhRoute: typeof AuthenticatedHoKinhDoanhRoute
+  AuthenticatedThietBiRoute: typeof AuthenticatedThietBiRoute
   AuthenticatedIndexRoute: typeof AuthenticatedIndexRoute
 }
 
 const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedHoKinhDoanhRoute: AuthenticatedHoKinhDoanhRoute,
+  AuthenticatedThietBiRoute: AuthenticatedThietBiRoute,
   AuthenticatedIndexRoute: AuthenticatedIndexRoute,
 }
 
