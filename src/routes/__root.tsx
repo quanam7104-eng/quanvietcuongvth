@@ -11,8 +11,6 @@ import { useEffect, type ReactNode } from "react";
 
 import appCss from "../styles.css?url";
 import { reportLovableError } from "../lib/lovable-error-reporting";
-import { supabase } from "@/integrations/supabase/client";
-import { heartbeatDevice } from "@/lib/devices.functions";
 
 function NotFoundComponent() {
   return (
@@ -139,52 +137,6 @@ function RootComponent() {
     return () => {
       window.removeEventListener("beforeunload", clearSession);
       window.removeEventListener("pagehide", clearSession);
-    };
-  }, []);
-
-  useEffect(() => {
-    if (typeof window === "undefined") return;
-    let stopped = false;
-    let timer: ReturnType<typeof setInterval> | null = null;
-
-    const DEVICE_KEY = "hvu_device_id";
-    const stored = localStorage.getItem(DEVICE_KEY);
-    const deviceId: string =
-      stored ??
-      ((crypto as any)?.randomUUID?.() ??
-        `d_${Math.random().toString(36).slice(2)}${Date.now().toString(36)}`);
-    if (!stored) localStorage.setItem(DEVICE_KEY, deviceId);
-
-    async function tick() {
-      if (stopped) return;
-      const { data } = await supabase.auth.getSession();
-      if (!data.session) return;
-      try {
-        const res = await heartbeatDevice({
-          data: { deviceId, userAgent: navigator.userAgent.slice(0, 500) },
-        });
-        if (res?.revoked) {
-          await supabase.auth.signOut();
-          if (window.location.pathname !== "/auth") {
-            window.location.replace("/auth?kicked=1");
-          }
-        }
-      } catch (e) {
-        // ignore transient errors
-      }
-    }
-
-    tick();
-    timer = setInterval(tick, 20_000);
-
-    const { data: sub } = supabase.auth.onAuthStateChange((event) => {
-      if (event === "SIGNED_IN") tick();
-    });
-
-    return () => {
-      stopped = true;
-      if (timer) clearInterval(timer);
-      sub.subscription.unsubscribe();
     };
   }, []);
 
