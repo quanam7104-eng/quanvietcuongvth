@@ -148,13 +148,12 @@ function RootComponent() {
     let timer: ReturnType<typeof setInterval> | null = null;
 
     const DEVICE_KEY = "hvu_device_id";
-    let deviceId = localStorage.getItem(DEVICE_KEY);
-    if (!deviceId) {
-      deviceId =
-        (crypto as any)?.randomUUID?.() ??
-        `d_${Math.random().toString(36).slice(2)}${Date.now().toString(36)}`;
-      localStorage.setItem(DEVICE_KEY, deviceId);
-    }
+    const stored = localStorage.getItem(DEVICE_KEY);
+    const deviceId: string =
+      stored ??
+      ((crypto as any)?.randomUUID?.() ??
+        `d_${Math.random().toString(36).slice(2)}${Date.now().toString(36)}`);
+    if (!stored) localStorage.setItem(DEVICE_KEY, deviceId);
 
     async function tick() {
       if (stopped) return;
@@ -162,7 +161,7 @@ function RootComponent() {
       if (!data.session) return;
       try {
         const res = await heartbeatDevice({
-          data: { deviceId: deviceId!, userAgent: navigator.userAgent.slice(0, 500) },
+          data: { deviceId, userAgent: navigator.userAgent.slice(0, 500) },
         });
         if (res?.revoked) {
           await supabase.auth.signOut();
