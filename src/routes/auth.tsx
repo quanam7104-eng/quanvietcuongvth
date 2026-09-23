@@ -11,6 +11,7 @@ import { toast, Toaster } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 
 export const Route = createFileRoute("/auth")({
+  ssr: false,
   head: () => ({
     meta: [
       { title: "Đăng nhập — TaxReconcile" },
