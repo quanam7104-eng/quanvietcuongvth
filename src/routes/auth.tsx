@@ -86,7 +86,7 @@ function AuthPage() {
             <ScrollText className="h-6 w-6" />
           </div>
           <div>
-            <h1 className="text-lg font-bold leading-tight">TaxReconcile</h1>
+            <h1 className="text-lg font-bold leading-tight">TaxReconcile - Vũ Thị Hiền</h1>
             <p className="text-xs text-muted-foreground whitespace-pre-line">
               Sản phẩm của sinh viên Trường Đại học Hùng Vương&nbsp;{"\n"}
               HVU -Quán Viết Cường&nbsp;
