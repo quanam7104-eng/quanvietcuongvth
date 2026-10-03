@@ -218,7 +218,7 @@ function HouseholdPage() {
           </section>
         )}
       </main>
-    </div>
+    </AppShell>
   );
 }
 
