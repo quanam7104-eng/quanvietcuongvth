@@ -14,7 +14,7 @@ import {
 
 const MAIN_ITEMS = [
   {
-    title: "Đối chiếu Doanh nghiệp (GTGT)",
+    title: "Đối chiếu Doanh nghiệp",
     url: "/",
     icon: Building2,
     match: (p: string) => p === "/" || p === "",
