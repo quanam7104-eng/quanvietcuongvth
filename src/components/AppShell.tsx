@@ -1,5 +1,4 @@
 import type { ReactNode } from "react";
-import { useRouter } from "@tanstack/react-router";
 import { Moon, Sun, LogOut } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Toaster } from "sonner";
@@ -20,8 +19,6 @@ interface AppShellProps {
 }
 
 export function AppShell({ email, dark, onToggleDark, onSignOut, actions, children }: AppShellProps) {
-  const router = useRouter();
-
   return (
     <SidebarProvider>
       <AppSidebar />
@@ -41,9 +38,6 @@ export function AppShell({ email, dark, onToggleDark, onSignOut, actions, childr
           </div>
         </header>
         <main className="flex-1">{children}</main>
-      </SidebarInset>
-      {/* giữ router tham chiếu để điều hướng trong shell hoạt động nhất quán */}
-      <span hidden data-router-ready={router ? "1" : "0"} />
     </SidebarProvider>
   );
 }
