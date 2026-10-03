@@ -4,10 +4,10 @@ import { Download, Play } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { toast, Toaster } from "sonner";
+import { toast } from "sonner";
 import { FileDropzone } from "@/components/FileDropzone";
 import { ColumnMapper } from "@/components/ColumnMapper";
-import { AppHeader } from "@/components/AppHeader";
+import { AppShell } from "@/components/AppShell";
 import { Dashboard } from "@/components/Dashboard";
 import { ResultsView } from "@/components/ResultsView";
 import { supabase } from "@/integrations/supabase/client";
@@ -123,19 +123,17 @@ function HouseholdPage() {
   }
 
   return (
-    <div className="min-h-screen bg-background text-foreground">
-      <Toaster richColors position="top-right" />
-      <AppHeader
-        email={email}
-        dark={dark}
-        onToggleDark={() => setDark((d) => !d)}
-        onSignOut={signOut}
-        actions={result && (
-          <Button onClick={() => exportReport(result)} variant="default" size="sm">
-            <Download className="mr-2 h-4 w-4" /> Xuất Excel
-          </Button>
-        )}
-      />
+    <AppShell
+      email={email}
+      dark={dark}
+      onToggleDark={() => setDark((d) => !d)}
+      onSignOut={signOut}
+      actions={result && (
+        <Button onClick={() => exportReport(result)} variant="default" size="sm">
+          <Download className="mr-2 h-4 w-4" /> Xuất Excel
+        </Button>
+      )}
+    >
 
       <main className="mx-auto max-w-7xl space-y-6 px-4 py-6">
         <section className="space-y-3">
