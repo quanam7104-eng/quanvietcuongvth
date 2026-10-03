@@ -1,12 +1,13 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { createFileRoute } from "@tanstack/react-router";
 import { useEffect, useMemo, useState } from "react";
-import { Moon, Sun, Download, Play, ScrollText, LogOut } from "lucide-react";
+import { Download, Play } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { toast, Toaster } from "sonner";
 import { FileDropzone } from "@/components/FileDropzone";
 import { ColumnMapper } from "@/components/ColumnMapper";
+import { AppHeader } from "@/components/AppHeader";
 import { Dashboard } from "@/components/Dashboard";
 import { ResultsView } from "@/components/ResultsView";
 import { HistoryPanel } from "@/components/HistoryPanel";
@@ -137,48 +138,17 @@ function Index() {
   return (
     <div className="min-h-screen bg-background text-foreground">
       <Toaster richColors position="top-right" />
-      <header className="sticky top-0 z-40 border-b bg-background/80 backdrop-blur">
-        <div className="mx-auto flex max-w-7xl items-center justify-between px-4 py-3">
-          <div className="flex items-center gap-3">
-            <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-primary text-primary-foreground">
-              <ScrollText className="h-5 w-5" />
-            </div>
-            <div>
-              <h1 className="text-base font-bold leading-tight">Đối chiếu Hóa Đơn từ thuế và phần mềm .</h1>
-              <p className="text-xs text-muted-foreground whitespace-pre-line">
-                Sản phẩm của sinh viên Trường Đại học Hùng Vương&nbsp;{"\n"}
-                HVU -Quán Viết Cường&nbsp;
-              </p>
-            </div>
-          </div>
-          <div className="flex items-center gap-2">
-            {email && <span className="hidden text-xs text-muted-foreground sm:inline">{email}</span>}
-            <Link
-              to="/huong-dan/tai-du-lieu-thue"
-              className="hidden text-xs text-primary hover:underline sm:inline"
-            >
-              Hướng dẫn tải dữ liệu
-            </Link>
-            <Link
-              to="/ho-kinh-doanh"
-              className="hidden text-xs text-primary hover:underline sm:inline"
-            >
-              Đối chiếu Hộ Kinh Doanh →
-            </Link>
-            {result && (
-              <Button onClick={() => exportReport(result)} variant="default" size="sm">
-                <Download className="mr-2 h-4 w-4" /> Xuất Excel
-              </Button>
-            )}
-            <Button variant="ghost" size="icon" onClick={() => setDark((d) => !d)}>
-              {dark ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
-            </Button>
-            <Button variant="ghost" size="icon" onClick={signOut} title="Đăng xuất">
-              <LogOut className="h-4 w-4" />
-            </Button>
-          </div>
-        </div>
-      </header>
+      <AppHeader
+        email={email}
+        dark={dark}
+        onToggleDark={() => setDark((d) => !d)}
+        onSignOut={signOut}
+        actions={result && (
+          <Button onClick={() => exportReport(result)} variant="default" size="sm">
+            <Download className="mr-2 h-4 w-4" /> Xuất Excel
+          </Button>
+        )}
+      />
 
       <main className="mx-auto max-w-7xl space-y-6 px-4 py-6">
         {/* Step 1: upload */}
