@@ -38,6 +38,7 @@ export function AppShell({ email, dark, onToggleDark, onSignOut, actions, childr
           </div>
         </header>
         <main className="flex-1">{children}</main>
+      </SidebarInset>
     </SidebarProvider>
   );
 }
