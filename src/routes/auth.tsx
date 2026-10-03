@@ -89,7 +89,7 @@ function AuthPage() {
             <h1 className="text-lg font-bold leading-tight">TaxReconcile - Vũ Thị Hiền</h1>
             <p className="text-xs text-muted-foreground whitespace-pre-line">
               Sản phẩm của sinh viên Trường Đại học Hùng Vương&nbsp;{"\n"}
-              HVU -Quán Viết Cường&nbsp;
+              HVU
             </p>
           </div>
         </div>
@@ -125,11 +125,7 @@ function AuthPage() {
           </form>
         </Tabs>
 
-        <p className="mt-6 text-center text-xs text-muted-foreground whitespace-pre-line">
-          Dữ liệu hóa đơn được xử lý trực tiếp trên trình duyệt{"\n"}
-          STK: 100877640769-Viettinbank- Quán Viết Cường{"\n"}
-          Sản phẩm Free không thu phí , mọi ủng hộ xin phép gửi vào STK trên.
-        </p>
+        <p className="mt-6 text-center text-xs text-muted-foreground whitespace-pre-line">{"\n"}</p>
         <div className="mt-3 text-center">
           <Link
             to="/huong-dan/tai-du-lieu-thue"
