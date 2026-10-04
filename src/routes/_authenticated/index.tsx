@@ -244,9 +244,7 @@ function Index() {
 
         {!result && !tax.file && !eb.file && (
           <Card className="p-8 text-center text-sm text-muted-foreground whitespace-pre-line">
-            Dữ liệu hóa đơn được xử lý trực tiếp trên trình duyệt&nbsp;{"\n"}
-            STK: 100877640769-Viettinbank- Quán Viết Cường{"\n"}
-            Sản phẩm Free không thu phí , mọi ủng hộ xin phép gửi vào STK trên.
+            Sản phẩm được phát triển bởi sinh viên Trường Đại Học Hùng Vương&nbsp;
           </Card>
         )}
       </main>
