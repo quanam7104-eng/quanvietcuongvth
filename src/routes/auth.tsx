@@ -1,7 +1,7 @@
 import { createFileRoute, useRouter, Link } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { z } from "zod";
-import { ScrollText, Loader2, Eye, EyeOff, MailCheck } from "lucide-react";
+import { ScrollText, Loader2, Eye, EyeOff } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -71,9 +71,6 @@ function AuthPage() {
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [busy, setBusy] = useState(false);
-  // Bước nhập mã 6 số sau khi đăng ký
-  const [pendingEmail, setPendingEmail] = useState("");
-  const [otp, setOtp] = useState("");
 
   useEffect(() => {
     supabase.auth.getUser().then(({ data }) => {
@@ -101,9 +98,8 @@ function AuthPage() {
           options: { emailRedirectTo: `${window.location.origin}/` },
         });
         if (error) throw error;
-        setPendingEmail(parsed.data.email);
-        setOtp("");
-        toast.success("Đã gửi mã xác nhận 6 số về email của bạn");
+        toast.success("Tạo tài khoản thành công! Chào mừng bạn.");
+        router.navigate({ to: "/", replace: true });
       } else {
         const { error } = await supabase.auth.signInWithPassword({
           email: parsed.data.email,
