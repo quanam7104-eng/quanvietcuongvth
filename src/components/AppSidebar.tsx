@@ -51,7 +51,7 @@ export function AppSidebar() {
                 </div>
                 <span className="text-sm font-bold leading-tight">
                   Đối chiếu Hóa Đơn
-                  <span className="block text-[10px] font-normal text-muted-foreground">từ thuế và phần mềm .</span>
+                  <span className="block text-[10px] font-normal text-muted-foreground">từ thuế và phần mềm</span>
                 </span>
               </Link>
             </SidebarMenuButton>
@@ -61,7 +61,7 @@ export function AppSidebar() {
 
       <SidebarContent>
         <SidebarGroup>
-          <SidebarGroupLabel>Chức năng đối chiếu</SidebarGroupLabel>
+          <SidebarGroupLabel>Chức năng đối chiếu hóa đơn mùa vào bán ra với bảng kê hóa đơn từ thuế</SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu>
               {MAIN_ITEMS.map((item) => (
