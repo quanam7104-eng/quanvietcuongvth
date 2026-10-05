@@ -9,19 +9,19 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
-import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/route'
 import { Route as AuthRouteImport } from './routes/auth'
+import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/route'
 import { Route as AuthenticatedIndexRouteImport } from './routes/_authenticated/index'
-import { Route as AuthenticatedHoKinhDoanhRouteImport } from './routes/_authenticated/ho-kinh-doanh'
 import { Route as HuongDanTaiDuLieuThueRouteImport } from './routes/huong-dan.tai-du-lieu-thue'
+import { Route as AuthenticatedHoKinhDoanhRouteImport } from './routes/_authenticated/ho-kinh-doanh'
 
-const AuthenticatedRouteRoute = AuthenticatedRouteRouteImport.update({
-  id: '/_authenticated',
-  getParentRoute: () => rootRouteImport,
-} as any)
 const AuthRoute = AuthRouteImport.update({
   id: '/auth',
   path: '/auth',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AuthenticatedRouteRoute = AuthenticatedRouteRouteImport.update({
+  id: '/_authenticated',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AuthenticatedIndexRoute = AuthenticatedIndexRouteImport.update({
@@ -29,17 +29,17 @@ const AuthenticatedIndexRoute = AuthenticatedIndexRouteImport.update({
   path: '/',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
+const HuongDanTaiDuLieuThueRoute = HuongDanTaiDuLieuThueRouteImport.update({
+  id: '/huong-dan/tai-du-lieu-thue',
+  path: '/huong-dan/tai-du-lieu-thue',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const AuthenticatedHoKinhDoanhRoute =
   AuthenticatedHoKinhDoanhRouteImport.update({
     id: '/ho-kinh-doanh',
     path: '/ho-kinh-doanh',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
-const HuongDanTaiDuLieuThueRoute = HuongDanTaiDuLieuThueRouteImport.update({
-  id: '/huong-dan/tai-du-lieu-thue',
-  path: '/huong-dan/tai-du-lieu-thue',
-  getParentRoute: () => rootRouteImport,
-} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof AuthenticatedIndexRoute
@@ -83,18 +83,18 @@ export interface RootRouteChildren {
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
-    '/_authenticated': {
-      id: '/_authenticated'
-      path: ''
-      fullPath: '/'
-      preLoaderRoute: typeof AuthenticatedRouteRouteImport
-      parentRoute: typeof rootRouteImport
-    }
     '/auth': {
       id: '/auth'
       path: '/auth'
       fullPath: '/auth'
       preLoaderRoute: typeof AuthRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/_authenticated': {
+      id: '/_authenticated'
+      path: ''
+      fullPath: '/'
+      preLoaderRoute: typeof AuthenticatedRouteRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/_authenticated/': {
@@ -104,19 +104,19 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedIndexRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
-    '/_authenticated/ho-kinh-doanh': {
-      id: '/_authenticated/ho-kinh-doanh'
-      path: '/ho-kinh-doanh'
-      fullPath: '/ho-kinh-doanh'
-      preLoaderRoute: typeof AuthenticatedHoKinhDoanhRouteImport
-      parentRoute: typeof AuthenticatedRouteRoute
-    }
     '/huong-dan/tai-du-lieu-thue': {
       id: '/huong-dan/tai-du-lieu-thue'
       path: '/huong-dan/tai-du-lieu-thue'
       fullPath: '/huong-dan/tai-du-lieu-thue'
       preLoaderRoute: typeof HuongDanTaiDuLieuThueRouteImport
       parentRoute: typeof rootRouteImport
+    }
+    '/_authenticated/ho-kinh-doanh': {
+      id: '/_authenticated/ho-kinh-doanh'
+      path: '/ho-kinh-doanh'
+      fullPath: '/ho-kinh-doanh'
+      preLoaderRoute: typeof AuthenticatedHoKinhDoanhRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
     }
   }
 }
