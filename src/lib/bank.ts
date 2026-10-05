@@ -117,7 +117,7 @@ export async function parseBankBook(file: File): Promise<BookVoucher[]> {
   for (const m of await matrices(file)) {
     for (let r = 0; r < Math.min(m.length, 40); r++) {
       const h = (m[r] || []).map(norm);
-      const iSo = findCol(h, [/so chung tu|so ct|chung tu/]);
+      const iSo = findCol(h, [/so chung tu/, /so ct/, /^chung tu$/]);
       const iThu = findCol(h, [/^(so tien )?thu$/, /^thu\b/, /phat sinh no/]);
       const iChi = findCol(h, [/^(so tien )?chi$/, /^chi\b/, /phat sinh co/]);
       const iDate = findCol(h, [/ngay hach toan/, /ngay chung tu/, /ngay/]);
