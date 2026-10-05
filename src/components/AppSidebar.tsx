@@ -1,5 +1,5 @@
 import { Link, useRouterState } from "@tanstack/react-router";
-import { Building2, Store, BookOpen } from "lucide-react";
+import { Building2, Store, BookOpen, Landmark } from "lucide-react";
 import {
   Sidebar,
   SidebarContent,
@@ -24,6 +24,12 @@ const MAIN_ITEMS = [
     url: "/ho-kinh-doanh",
     icon: Store,
     match: (p: string) => p.startsWith("/ho-kinh-doanh"),
+  },
+  {
+    title: "Đối chiếu Sao kê Ngân hàng",
+    url: "/sao-ke-ngan-hang",
+    icon: Landmark,
+    match: (p: string) => p.startsWith("/sao-ke-ngan-hang"),
   },
 ];
 
