@@ -27,7 +27,7 @@ export const Route = createFileRoute("/_authenticated/sao-ke-ngan-hang")({
   component: BankPage,
 });
 
-type Tab = "daily" | "matched" | "book" | "bank";
+type Tab = "daily" | "matched" | "book" | "bank" | "lech";
 
 function BankPage() {
   const router = useRouter();
