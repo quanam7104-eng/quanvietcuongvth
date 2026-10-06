@@ -7,6 +7,7 @@ import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { FileDropzone } from "@/components/FileDropzone";
 import { AppShell } from "@/components/AppShell";
+import { HistoryPanel } from "@/components/HistoryPanel";
 import { supabase } from "@/integrations/supabase/client";
 import { formatVND } from "@/lib/reconcile";
 import {
@@ -38,6 +39,7 @@ function BankPage() {
   const [busy, setBusy] = useState(false);
   const [tab, setTab] = useState<Tab>("daily");
   const [onlyDiff, setOnlyDiff] = useState(false);
+  const [historyKey, setHistoryKey] = useState(0);
 
   useEffect(() => { document.documentElement.classList.toggle("dark", dark); }, [dark]);
   useEffect(() => { supabase.auth.getUser().then(({ data }) => setEmail(data.user?.email ?? "")); }, []);
@@ -50,6 +52,22 @@ function BankPage() {
       const r = reconcileBank(book, bank);
       setResult(r);
       toast.success(`Đã đối chiếu ${book.length} phiếu sổ với ${bank.length} dòng sao kê`);
+      const { data: u } = await supabase.auth.getUser();
+      if (u.user) {
+        const { error } = await supabase.from("reconciliations").insert({
+          user_id: u.user.id,
+          tax_file_name: `[SAOKE] ${bankFile.name}`,
+          eb_file_name: bookFile.name,
+          matched_count: r.matches.length,
+          mismatched_count: 0,
+          only_tax_count: r.onlyBook.length,
+          only_eb_count: r.onlyBank.length,
+          total_diff: Math.abs(r.totals.bookThu - r.totals.bankThu) + Math.abs(r.totals.bookChi - r.totals.bankChi),
+          result: JSON.parse(JSON.stringify(r)),
+        });
+        if (error) toast.error("Lưu lịch sử lỗi: " + error.message);
+        else setHistoryKey((k) => k + 1);
+      }
     } catch (e) {
       toast.error((e as Error).message);
     } finally { setBusy(false); }
@@ -149,7 +167,8 @@ function BankPage() {
                       <td className="p-2 text-right">{m.voucher.thu ? formatVND(m.voucher.thu) : ""}</td>
                       <td className="p-2 text-right">{m.voucher.chi ? formatVND(m.voucher.chi) : ""}</td>
                       <td className="p-2 text-xs">
-                        {m.kind === "gop" ? <Badge variant="outline">Gộp {m.lines.length} dòng</Badge>
+                        {m.kind === "nhieu-phieu" ? <Badge variant="outline">{m.groupSize} phiếu ↔ {m.lines.length} dòng (tổng khớp)</Badge>
+                          : m.kind === "gop" ? <Badge variant="outline">Gộp {m.lines.length} dòng</Badge>
                           : m.kind === "lech-ngay" ? <Badge variant="outline">Lệch ngày ({m.lines[0].date})</Badge>
                           : <Badge variant="secondary">Khớp</Badge>}
                       </td>
@@ -188,6 +207,14 @@ function BankPage() {
             </Card>
           </section>
         )}
+        <section className="space-y-3">
+          <div className="flex items-center gap-2">
+            <Badge variant="secondary">Lịch sử</Badge>
+            <h2 className="text-lg font-semibold">Các lần đối chiếu sao kê đã lưu</h2>
+          </div>
+          <HistoryPanel kind="saoke" reloadKey={historyKey}
+            onLoad={(r) => { setResult(r as BankResult); setTab("daily"); window.scrollTo({ top: 0, behavior: "smooth" }); }} />
+        </section>
       </main>
     </AppShell>
   );
