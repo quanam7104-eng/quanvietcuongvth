@@ -120,7 +120,8 @@ function BankPage() {
             </div>
 
             <div className="flex flex-wrap gap-2">
-              {([["daily", "Tổng thu chi theo ngày"], ["matched", `Đã khớp (${result.matches.length})`],
+              {([["daily", "Tổng thu chi theo ngày"], ["lech", `Lệch (${result.onlyBook.length + result.onlyBank.length + result.matches.filter((m) => m.kind === "lech-ngay").length})`],
+                ["matched", `Đã khớp (${result.matches.length})`],
                 ["book", `Chỉ có trên sổ (${result.onlyBook.length})`], ["bank", `Chỉ có trên sao kê (${result.onlyBank.length})`]] as [Tab, string][])
                 .map(([k, l]) => (
                   <Button key={k} size="sm" variant={tab === k ? "default" : "outline"} onClick={() => setTab(k)}>{l}</Button>
