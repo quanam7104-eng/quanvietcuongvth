@@ -10,6 +10,7 @@ import { ColumnMapper } from "@/components/ColumnMapper";
 import { AppShell } from "@/components/AppShell";
 import { Dashboard } from "@/components/Dashboard";
 import { ResultsView } from "@/components/ResultsView";
+import { HistoryPanel } from "@/components/HistoryPanel";
 import { supabase } from "@/integrations/supabase/client";
 import {
   autoMapHouseholdEB, autoMapHouseholdTax, buildInvoices, exportReport,
@@ -44,6 +45,7 @@ function HouseholdPage() {
   const [result, setResult] = useState<ReconcileResult | null>(null);
   const [busy, setBusy] = useState(false);
   const [resultLabel, setResultLabel] = useState("");
+  const [historyKey, setHistoryKey] = useState(0);
 
   useEffect(() => { document.documentElement.classList.toggle("dark", dark); }, [dark]);
   useEffect(() => {
@@ -115,6 +117,7 @@ function HouseholdPage() {
             result: JSON.parse(JSON.stringify(res)),
           });
           if (error) toast.error("Lưu lịch sử lỗi: " + error.message);
+          else setHistoryKey((k) => k + 1);
         }
       } catch (e) {
         toast.error("Lỗi đối chiếu: " + (e as Error).message);
@@ -217,6 +220,14 @@ function HouseholdPage() {
             </Card>
           </section>
         )}
+        <section className="space-y-3">
+          <div className="flex items-center gap-2">
+            <Badge variant="secondary">Lịch sử</Badge>
+            <h2 className="text-lg font-semibold">Các lần đối chiếu Hộ Kinh Doanh đã lưu</h2>
+          </div>
+          <HistoryPanel kind="hkd" reloadKey={historyKey}
+            onLoad={(r, label) => { setResult(r); setResultLabel(label); window.scrollTo({ top: 0, behavior: "smooth" }); }} />
+        </section>
       </main>
     </AppShell>
   );
