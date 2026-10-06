@@ -19,12 +19,18 @@ interface HistoryRow {
   created_at: string;
 }
 
+export type HistoryKind = "dn" | "hkd" | "saoke";
+const PREFIX: Record<HistoryKind, string> = { dn: "", hkd: "[HKD]", saoke: "[SAOKE]" };
+
 export function HistoryPanel({
   reloadKey,
   onLoad,
+  kind = "dn",
 }: {
   reloadKey: number;
-  onLoad: (r: ReconcileResult, label: string) => void;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  onLoad: (r: any, label: string) => void;
+  kind?: HistoryKind;
 }) {
   const [rows, setRows] = useState<HistoryRow[]>([]);
   const [loading, setLoading] = useState(true);
@@ -36,11 +42,18 @@ export function HistoryPanel({
       .from("reconciliations")
       .select("id,tax_file_name,eb_file_name,matched_count,mismatched_count,only_tax_count,only_eb_count,total_diff,created_at")
       .order("created_at", { ascending: false })
-      .limit(50);
+      .limit(200);
     if (error) toast.error("Không tải được lịch sử: " + error.message);
-    else setRows((data ?? []) as HistoryRow[]);
+    else {
+      const all = (data ?? []) as HistoryRow[];
+      const p = PREFIX[kind];
+      setRows(all.filter((r) => {
+        const n = r.tax_file_name ?? "";
+        return p ? n.startsWith(p) : !n.startsWith("[HKD]") && !n.startsWith("[SAOKE]");
+      }).slice(0, 50));
+    }
     setLoading(false);
-  }, []);
+  }, [kind]);
 
   useEffect(() => { fetchRows(); }, [fetchRows, reloadKey]);
 
