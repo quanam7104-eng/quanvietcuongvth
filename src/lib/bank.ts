@@ -21,7 +21,8 @@ export interface BookVoucher {
 export interface BankMatch {
   voucher: BookVoucher;
   lines: BankLine[];
-  kind: "exact" | "lech-ngay" | "gop";
+  kind: "exact" | "lech-ngay" | "gop" | "nhieu-phieu";
+  groupSize?: number;
 }
 
 export interface DailyRow {
@@ -194,6 +195,23 @@ export function reconcileBank(book: BookVoucher[], bank: BankLine[], dayToleranc
     const set = subsetSum(near, amt(v));
     if (set) { set.forEach((s) => used.add(s.id)); matched.add(v.id); matches.push({ voucher: v, lines: set, kind: "gop" }); }
   }
+  // 4) nhiều phiếu sổ ↔ nhiều dòng sao kê (vd. THU NO TKV): cùng ngày, cùng chiều, tổng tiền bằng nhau
+  const groupPass = (sameKey: (d: string) => string) => {
+    const groups = new Map<string, { v: BookVoucher[]; b: BankLine[] }>();
+    const g = (k: string) => groups.get(k) ?? groups.set(k, { v: [], b: [] }).get(k)!;
+    for (const v of book) if (!matched.has(v.id) && amt(v) !== 0) g(`${sameKey(v.date)}|${Math.sign(amt(v))}`).v.push(v);
+    for (const b of free()) if (amt(b) !== 0) g(`${sameKey(b.date)}|${Math.sign(amt(b))}`).b.push(b);
+    for (const { v, b } of groups.values()) {
+      if (!v.length || !b.length || v.length + b.length < 3) continue;
+      if (v.reduce((s, x) => s + amt(x), 0) !== b.reduce((s, x) => s + amt(x), 0)) continue;
+      b.forEach((x) => used.add(x.id));
+      v.forEach((x) => { matched.add(x.id); matches.push({ voucher: x, lines: b, kind: "nhieu-phieu", groupSize: v.length }); });
+    }
+  };
+  groupPass((d) => d);
+  // cho phép lệch ngày: gộp theo cửa sổ tuần
+  groupPass((d) => String(Math.floor(dayNum(d) / 7)));
+
 
   const dmap = new Map<string, DailyRow>();
   const row = (d: string) => dmap.get(d) ?? dmap.set(d, { date: d, bookThu: 0, bankThu: 0, bookChi: 0, bankChi: 0 }).get(d)!;
