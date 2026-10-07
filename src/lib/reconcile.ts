@@ -346,7 +346,7 @@ function normInvoiceNumber(v: unknown): string {
   // "2,394" / "2.394" / "2394.0" / "No.0002394" → "2394"
   s = s.replace(/[.,]0+$/, "");
   const digits = s.replace(/\D/g, "");
-  if (digits && digits.length >= s.replace(/[.,\-\/#:]|^(no|so)/gi, "").length - 0) {
+  if (digits && /^[\d.,]+$/.test(s)) {
     return digits.replace(/^0+/, "") || digits;
   }
   // mixed alnum: keep only the trailing number part if present
