@@ -342,7 +342,16 @@ function normalizeDate(v: unknown): string {
 }
 
 function normInvoiceNumber(v: unknown): string {
-  const s = toStr(v).replace(/\s+/g, "");
+  let s = toStr(v).replace(/\s+/g, "");
+  // "2,394" / "2.394" / "2394.0" / "No.0002394" → "2394"
+  s = s.replace(/[.,]0+$/, "");
+  const digits = s.replace(/\D/g, "");
+  if (digits && /^[\d.,]+$/.test(s)) {
+    return digits.replace(/^0+/, "") || digits;
+  }
+  // mixed alnum: keep only the trailing number part if present
+  const tail = s.match(/(\d+)$/);
+  if (tail) return tail[1].replace(/^0+/, "") || tail[1];
   return s.replace(/^0+/, "") || s;
 }
 
@@ -493,21 +502,42 @@ function reconcileWith(
   const onlyTax: Invoice[] = [];
   const usedEB = new Set<Invoice>();
 
-  for (const t of taxList) {
-    const k1 = t._key;
-    const k2 = `${t.soHoaDon}|${t._mstNorm}`;
-    const k3 = t.soHoaDon.toUpperCase();
-    let cand: Invoice | undefined;
-    for (const list of [idxFull.get(k1), idxSoMst.get(k2), idxSo.get(k3)]) {
-      if (!list) continue;
-      cand = list.find((e) => !usedEB.has(e));
-      if (cand) break;
+  // Ghép theo nhiều lượt: lượt chặt (đủ khóa) cho TẤT CẢ HĐ trước, rồi mới
+  // nới lỏng — tránh HĐ trùng số khác ký hiệu "giành" mất cặp đúng.
+  const pairOf = new Map<Invoice, Invoice>();
+  const pickBest = (t: Invoice, list?: Invoice[]) => {
+    const free = (list ?? []).filter((e) => !usedEB.has(e));
+    if (!free.length) return undefined;
+    const score = (e: Invoice) =>
+      (moneyEq(e.tongTien, t.tongTien) ? 4 : 0) +
+      (t.ngay && e.ngay === t.ngay ? 2 : 0) +
+      (t._kyHieuNorm && e._kyHieuNorm === t._kyHieuNorm ? 1 : 0) -
+      Math.abs((e.tongTien || 0) - (t.tongTien || 0)) / (Math.abs(t.tongTien) + 1) * 1e-3;
+    return free.sort((a, b) => score(b) - score(a))[0];
+  };
+  const passes: ((t: Invoice) => Invoice[] | undefined)[] = [
+    (t) => idxFull.get(t._key),
+    (t) => idxSoMst.get(`${t.soHoaDon}|${t._mstNorm}`),
+    (t) => (idxSo.get(t.soHoaDon.toUpperCase()) ?? []).filter(
+      (e) => !t._kyHieuNorm || !e._kyHieuNorm || e._kyHieuNorm === t._kyHieuNorm),
+    (t) => (idxSo.get(t.soHoaDon.toUpperCase()) ?? []).filter(
+      (e) => moneyEq(e.tongTien, t.tongTien) || (t.ngay && e.ngay === t.ngay)),
+    (t) => idxSo.get(t.soHoaDon.toUpperCase()),
+  ];
+  for (const pass of passes) {
+    for (const t of taxList) {
+      if (pairOf.has(t)) continue;
+      const c = pickBest(t, pass(t));
+      if (c) { pairOf.set(t, c); usedEB.add(c); }
     }
+  }
+
+  for (const t of taxList) {
+    const cand = pairOf.get(t);
     if (!cand) {
       onlyTax.push(t);
       continue;
     }
-    usedEB.add(cand);
     const diffs: MatchedPair["diffs"] = [];
     if (moneyFields.includes("tienHang") && !moneyEq(t.tienHang, cand.tienHang))
       diffs.push({ field: "tienHang", tax: t.tienHang, eb: cand.tienHang, delta: t.tienHang - cand.tienHang });
