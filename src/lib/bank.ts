@@ -143,7 +143,10 @@ export async function parseBankBook(file: File): Promise<BookVoucher[]> {
   throw new Error("Không tìm thấy sổ tiền gửi (cần cột Ngày, Số chứng từ, Thu, Chi)");
 }
 
-const cents = (n: number) => Math.round(n * 100);
+// So khớp chính xác đến từng đồng — không làm tròn.
+// Chỉ lượng tử hóa ở mức 1e-9 để tránh sai số dấu phẩy động của IEEE-754
+// (mọi số tiền VND đều là số nguyên đồng, nên giá trị không bị thay đổi).
+const cents = (n: number) => Math.round(n * 1e9) / 1e9;
 const amt = (x: { thu: number; chi: number }) => cents(x.thu - x.chi); // signed
 
 /** Tìm tập con các dòng sao kê có tổng = target (cents, cùng dấu). */
