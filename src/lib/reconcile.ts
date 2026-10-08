@@ -288,8 +288,11 @@ export interface Invoice {
 function toNum(v: unknown): number {
   if (v === null || v === undefined || v === "") return 0;
   if (typeof v === "number") return v;
-  let s = String(v).trim();
+  let s = String(v).replace(/\s/g, "").trim();
   if (!s) return 0;
+  // Accounting notation: parentheses denote a negative amount, not decoration.
+  const negativeParentheses = /^\(.*\)$/.test(s);
+  if (negativeParentheses) s = s.slice(1, -1);
   // Vietnamese: "1.234.567,89" or "1,234,567.89"
   const hasComma = s.includes(",");
   const hasDot = s.includes(".");
@@ -310,7 +313,7 @@ function toNum(v: unknown): number {
     if (dots.length > 2) s = s.replace(/\./g, "");
   }
   const n = parseFloat(s.replace(/[^\d.\-]/g, ""));
-  return isNaN(n) ? 0 : n;
+  return isNaN(n) ? 0 : negativeParentheses ? -Math.abs(n) : n;
 }
 
 function toStr(v: unknown): string {
