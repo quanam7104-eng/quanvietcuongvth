@@ -68,7 +68,7 @@ export function ResultsView({ result }: { result: ReconcileResult }) {
             <thead className="bg-muted/50"><tr>
               <th className={th}>Số HĐ</th><th className={th}>Ký hiệu</th>
               <th className={th}>MST</th><th className={th}>Ngày</th>
-              <th className={th}>Tổng (Thuế)</th><th className={th}>Tổng (EB)</th>
+               <MoneyHeaders source="Thuế" /><MoneyHeaders source="Phần mềm" />
               <th className={th}>Chỉ tiêu lệch</th><th className={th}></th>
             </tr></thead>
             <tbody>
@@ -78,8 +78,8 @@ export function ResultsView({ result }: { result: ReconcileResult }) {
                   <td className={td}>{m.tax.kyHieu}</td>
                   <td className={td}>{m.tax.mst}</td>
                   <td className={td}>{m.tax.ngay}</td>
-                  <td className={td}>{formatVND(m.tax.tongTien)}</td>
-                  <td className={td}>{formatVND(m.eb.tongTien)}</td>
+                   <MoneyCells invoice={m.tax} />
+                   <MoneyCells invoice={m.eb} />
                   <td className={td}>
                     <div className="flex flex-wrap gap-1">
                       {m.diffs.map((d, j) => (
@@ -92,7 +92,7 @@ export function ResultsView({ result }: { result: ReconcileResult }) {
                   <td className={`${td} text-primary text-xs`}>Xem chi tiết →</td>
                 </tr>
               ))}
-              {!mismatched.length && <EmptyRow text="Không có hóa đơn lệch." cols={8} />}
+               {!mismatched.length && <EmptyRow text="Không có hóa đơn lệch." cols={12} />}
             </tbody>
           </ScrollTable>
         </TabsContent>
@@ -107,7 +107,9 @@ export function ResultsView({ result }: { result: ReconcileResult }) {
           <ScrollTable>
             <thead className="bg-muted/50"><tr>
               <th className={th}>Số HĐ</th><th className={th}>MST</th>
-              <th className={th}>Tên KH</th><th className={th}>Tổng tiền</th><th className={th}>Trạng thái</th>
+               <th className={th}>Tên KH</th>
+               <MoneyHeaders source="Thuế" /><MoneyHeaders source="Phần mềm" />
+               <th className={th}>Trạng thái</th>
             </tr></thead>
             <tbody>
               {matched.map((m, i) => (
@@ -115,11 +117,12 @@ export function ResultsView({ result }: { result: ReconcileResult }) {
                   <td className={`${td} font-medium`}>{m.tax.soHoaDon}</td>
                   <td className={td}>{m.tax.mst}</td>
                   <td className={td}>{m.tax.tenKH}</td>
-                  <td className={td}>{formatVND(m.tax.tongTien)}</td>
+                   <MoneyCells invoice={m.tax} />
+                   <MoneyCells invoice={m.eb} />
                   <td className={td}><Badge className="bg-success text-success-foreground">KHỚP</Badge></td>
                 </tr>
               ))}
-              {!matched.length && <EmptyRow text="Chưa có hóa đơn khớp." cols={5} />}
+               {!matched.length && <EmptyRow text="Chưa có hóa đơn khớp." cols={10} />}
             </tbody>
           </ScrollTable>
         </TabsContent>
@@ -173,6 +176,24 @@ function ScrollTable({ children }: { children: React.ReactNode }) {
     </div>
   );
 }
+
+const moneyFields = ["tienHang", "thueGTGT", "tongTien"] as const;
+const moneyLabels = ["Tiền chưa thuế", "Tiền thuế", "Tổng thanh toán"] as const;
+
+function MoneyHeaders({ source }: { source?: string }) {
+  return <>{moneyFields.map((field, i) => (
+    <th key={field} className={`${th} whitespace-nowrap text-right`}>
+      {moneyLabels[i]}{source && <span className="block text-xs font-normal normal-case">{source}</span>}
+    </th>
+  ))}</>;
+}
+
+function MoneyCells({ invoice }: { invoice: Invoice }) {
+  return <>{moneyFields.map((field) => (
+    <td key={field} className={`${td} whitespace-nowrap text-right tabular-nums`}>{formatVND(invoice[field])}</td>
+  ))}</>;
+}
+
 function EmptyRow({ text, cols }: { text: string; cols: number }) {
   return <tr><td colSpan={cols} className="px-3 py-8 text-center text-sm text-muted-foreground">{text}</td></tr>;
 }
@@ -185,7 +206,7 @@ function SimpleInvoiceTable({
       <thead className="bg-muted/50"><tr>
         <th className={th}>Số HĐ</th><th className={th}>Ký hiệu</th>
         <th className={th}>Ngày HĐ</th><th className={th}>MST</th>
-        <th className={th}>Tên KH</th><th className={th}>Tổng tiền</th><th className={th}>Trạng thái</th>
+         <th className={th}>Tên KH</th><MoneyHeaders /><th className={th}>Trạng thái</th>
       </tr></thead>
       <tbody>
         {rows.map((r, i) => (
@@ -195,11 +216,11 @@ function SimpleInvoiceTable({
             <td className={td}>{r.ngay}</td>
             <td className={td}>{r.mst}</td>
             <td className={td}>{r.tenKH}</td>
-            <td className={td}>{formatVND(r.tongTien)}</td>
+             <MoneyCells invoice={r} />
             <td className={td}><Badge variant={badgeVariant}>{status}</Badge></td>
           </tr>
         ))}
-        {!rows.length && <EmptyRow text="Không có dữ liệu." cols={7} />}
+         {!rows.length && <EmptyRow text="Không có dữ liệu." cols={9} />}
       </tbody>
     </ScrollTable>
   );
