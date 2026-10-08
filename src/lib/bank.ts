@@ -54,12 +54,15 @@ const norm = (s: unknown) =>
 function num(v: unknown): number {
   let s = String(v ?? "").replace(/vnd|\s/gi, "");
   if (!s) return 0;
+  // Remove the accounting wrapper before detecting decimal/thousands separators.
+  const negativeParentheses = /^\(.*\)$/.test(s);
+  if (negativeParentheses) s = s.slice(1, -1);
   const c = s.includes(","), d = s.includes(".");
   if (c && d) s = s.lastIndexOf(",") > s.lastIndexOf(".") ? s.replace(/\./g, "").replace(",", ".") : s.replace(/,/g, "");
   else if (c) s = /^-?\d{1,3}(,\d{3})+$/.test(s) ? s.replace(/,/g, "") : s.replace(",", ".");
   else if (d && /^-?\d{1,3}(\.\d{3})+$/.test(s)) s = s.replace(/\./g, "");
   const n = parseFloat(s.replace(/[^\d.\-]/g, ""));
-  return isNaN(n) ? 0 : n;
+  return isNaN(n) || n === 0 ? 0 : negativeParentheses ? -Math.abs(n) : n;
 }
 
 function date(v: unknown): string {
