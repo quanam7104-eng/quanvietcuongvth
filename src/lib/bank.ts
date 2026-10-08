@@ -62,7 +62,7 @@ function num(v: unknown): number {
   else if (c) s = /^-?\d{1,3}(,\d{3})+$/.test(s) ? s.replace(/,/g, "") : s.replace(",", ".");
   else if (d && /^-?\d{1,3}(\.\d{3})+$/.test(s)) s = s.replace(/\./g, "");
   const n = parseFloat(s.replace(/[^\d.\-]/g, ""));
-  return isNaN(n) ? 0 : negativeParentheses ? -Math.abs(n) : n;
+  return isNaN(n) || n === 0 ? 0 : negativeParentheses ? -Math.abs(n) : n;
 }
 
 function date(v: unknown): string {

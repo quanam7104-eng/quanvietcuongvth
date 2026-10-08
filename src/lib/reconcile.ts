@@ -313,7 +313,7 @@ function toNum(v: unknown): number {
     if (dots.length > 2) s = s.replace(/\./g, "");
   }
   const n = parseFloat(s.replace(/[^\d.\-]/g, ""));
-  return isNaN(n) ? 0 : negativeParentheses ? -Math.abs(n) : n;
+  return isNaN(n) || n === 0 ? 0 : negativeParentheses ? -Math.abs(n) : n;
 }
 
 function toStr(v: unknown): string {
