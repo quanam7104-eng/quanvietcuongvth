@@ -109,7 +109,7 @@ export async function parseBankStatement(file: File): Promise<BankLine[]> {
         if (!dt) continue;
         const chi = num(row[iNo]), thu = num(row[iCo]);
         if (!chi && !thu) continue;
-        const refM = String(row[iDate]).split("/ ").slice(1).join("/ ").trim();
+        const refM = (iRef >= 0 ? String(row[iRef] ?? "").trim() : "") || String(row[iDate]).split("/ ").slice(1).join("/ ").trim();
         out.push({ id: out.length, date: dt, ref: refM, desc: String(row[iDesc] ?? "").trim(), thu, chi });
       }
       if (out.length) return out;
