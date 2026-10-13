@@ -87,7 +87,7 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       { name: "twitter:card", content: "summary" },
       { name: "twitter:site", content: "@Lovable" },
       { name: "twitter:title", content: "Quán Viết Cường -225D10027" },
-      { name: "twitter:description", content: "Sản phẩm của sinh viên Trường Đại học Hùng Vương. HVU- Quán Viết Cường nhằm hỗ trợ việc rà soát hóa đơn lệch khi lên tờ khai." },
+      { name: "twitter:description", content: "sản phẩm của sinh viên Trường Đại Học Hùng Vương" },
       { property: "og:image", content: "https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/78820de8-5245-4b66-b6d6-9bb9a220e6aa/id-preview-e83db0cc--bbfe6594-eba2-47d4-b609-c47434f6c2ba.lovable.app-1781722880119.png" },
       { name: "twitter:image", content: "https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/78820de8-5245-4b66-b6d6-9bb9a220e6aa/id-preview-e83db0cc--bbfe6594-eba2-47d4-b609-c47434f6c2ba.lovable.app-1781722880119.png" },
     ],
