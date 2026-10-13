@@ -18,9 +18,9 @@ import {
 export const Route = createFileRoute("/_authenticated/sao-ke-ngan-hang")({
   head: () => ({
     meta: [
-      { title: "Đối chiếu Sao kê Ngân hàng — TaxReconcile" },
+      { title: "QVC - Vũ Thị Hiền" },
       { name: "description", content: "Đối chiếu sao kê ngân hàng với sổ tiền gửi: gộp phiếu, tổng thu chi theo từng ngày." },
-      { property: "og:title", content: "Đối chiếu Sao kê Ngân hàng — TaxReconcile" },
+      { property: "og:title", content: "QVC - Vũ Thị Hiền" },
       { property: "og:description", content: "Đối chiếu sao kê ngân hàng với sổ tiền gửi theo từng ngày." },
     ],
   }),

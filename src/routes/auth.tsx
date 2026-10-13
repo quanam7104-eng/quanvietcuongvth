@@ -14,7 +14,7 @@ export const Route = createFileRoute("/auth")({
   ssr: false,
   head: () => ({
     meta: [
-      { title: "Đăng nhập — TaxReconcile" },
+      { title: "QVC - Vũ Thị Hiền" },
       { name: "description", content: "Đăng nhập hoặc tạo tài khoản TaxReconcile để bắt đầu đối chiếu hóa đơn." },
     ],
   }),

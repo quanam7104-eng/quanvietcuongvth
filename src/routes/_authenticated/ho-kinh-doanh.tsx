@@ -21,7 +21,7 @@ import {
 export const Route = createFileRoute("/_authenticated/ho-kinh-doanh")({
   head: () => ({
     meta: [
-      { title: "Đối Chiếu Hộ Kinh Doanh — TaxReconcile" },
+      { title: "QVC - Vũ Thị Hiền" },
       { name: "description", content: "Đối chiếu hóa đơn hộ kinh doanh: Doanh số bán chưa có thuế (Thuế) so với Tổng tiền thanh toán (phần mềm)." },
     ],
   }),

@@ -21,7 +21,7 @@ import {
 export const Route = createFileRoute("/_authenticated/")({
   head: () => ({
     meta: [
-      { title: "TaxReconcile — Đối Chiếu Hóa Đơn" },
+      { title: "QVC - Vũ Thị Hiền" },
       { name: "description", content: "sản phẩm của sinh viên Trường Đại Học Hùng Vương" },
       { property: "og:description", content: "sản phẩm của sinh viên Trường Đại Học Hùng Vương" },
       { name: "twitter:description", content: "sản phẩm của sinh viên Trường Đại Học Hùng Vương" },
