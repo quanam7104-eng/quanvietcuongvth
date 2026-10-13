@@ -96,11 +96,12 @@ export async function parseBankStatement(file: File): Promise<BankLine[]> {
   for (const m of await matrices(file)) {
     for (let r = 0; r < Math.min(m.length, 40); r++) {
       const h = (m[r] || []).map(norm);
-      const iNo = findCol(h, [/ghi no|debit|so tien chi|rut ra/]);
-      const iCo = findCol(h, [/ghi co|credit|so tien thu|gui vao/]);
+      const iNo = findCol(h, [/ghi no|debit|so tien chi|rut ra|phat sinh no/]);
+      const iCo = findCol(h, [/ghi co|credit|so tien thu|gui vao|phat sinh co/]);
       const iDate = findCol(h, [/ngay|date/]);
       if (iNo < 0 || iCo < 0 || iDate < 0) continue;
       const iDesc = findCol(h, [/noi dung|detail|dien giai|description/]);
+      const iRef = findCol(h, [/but toan|so tham chieu|reference|so gd|ma giao dich/]);
       const out: BankLine[] = [];
       for (let k = r + 1; k < m.length; k++) {
         const row = m[k] || [];
@@ -108,7 +109,7 @@ export async function parseBankStatement(file: File): Promise<BankLine[]> {
         if (!dt) continue;
         const chi = num(row[iNo]), thu = num(row[iCo]);
         if (!chi && !thu) continue;
-        const refM = String(row[iDate]).split("/ ").slice(1).join("/ ").trim();
+        const refM = (iRef >= 0 ? String(row[iRef] ?? "").trim() : "") || String(row[iDate]).split("/ ").slice(1).join("/ ").trim();
         out.push({ id: out.length, date: dt, ref: refM, desc: String(row[iDesc] ?? "").trim(), thu, chi });
       }
       if (out.length) return out;
