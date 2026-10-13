@@ -96,8 +96,8 @@ export async function parseBankStatement(file: File): Promise<BankLine[]> {
   for (const m of await matrices(file)) {
     for (let r = 0; r < Math.min(m.length, 40); r++) {
       const h = (m[r] || []).map(norm);
-      const iNo = findCol(h, [/ghi no|debit|so tien chi|rut ra/]);
-      const iCo = findCol(h, [/ghi co|credit|so tien thu|gui vao/]);
+      const iNo = findCol(h, [/ghi no|debit|so tien chi|rut ra|phat sinh no/]);
+      const iCo = findCol(h, [/ghi co|credit|so tien thu|gui vao|phat sinh co/]);
       const iDate = findCol(h, [/ngay|date/]);
       if (iNo < 0 || iCo < 0 || iDate < 0) continue;
       const iDesc = findCol(h, [/noi dung|detail|dien giai|description/]);
