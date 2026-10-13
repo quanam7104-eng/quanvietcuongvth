@@ -22,7 +22,9 @@ export const Route = createFileRoute("/_authenticated/")({
   head: () => ({
     meta: [
       { title: "TaxReconcile — Đối Chiếu Hóa Đơn" },
-      { name: "description", content: "TaxReconcile: nền tảng đối chiếu hóa đơn Thuế ↔ EasyBooks chuyên nghiệp." },
+      { name: "description", content: "sản phẩm của sinh viên Trường Đại Học Hùng Vương" },
+      { property: "og:description", content: "sản phẩm của sinh viên Trường Đại Học Hùng Vương" },
+      { name: "twitter:description", content: "sản phẩm của sinh viên Trường Đại Học Hùng Vương" },
     ],
   }),
   component: Index,
