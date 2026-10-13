@@ -101,6 +101,7 @@ export async function parseBankStatement(file: File): Promise<BankLine[]> {
       const iDate = findCol(h, [/ngay|date/]);
       if (iNo < 0 || iCo < 0 || iDate < 0) continue;
       const iDesc = findCol(h, [/noi dung|detail|dien giai|description/]);
+      const iRef = findCol(h, [/but toan|so tham chieu|reference|so gd|ma giao dich/]);
       const out: BankLine[] = [];
       for (let k = r + 1; k < m.length; k++) {
         const row = m[k] || [];
